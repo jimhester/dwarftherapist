@@ -83,8 +83,8 @@ private:
     vector<t_matgloss> m_woodstypes;
     vector< vector<t_itemType> > m_itemstypes;
 
-    vector<vector<string>> m_english;
-	vector<vector<string>> m_foreign;
+    vector<vector<string> > m_english;
+	vector<vector<string> > m_foreign;
     int m_attach_count;
     QTimer *m_heartbeat_timer;
     DFHack::API m_DF;
