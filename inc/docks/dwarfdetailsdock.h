@@ -33,7 +33,7 @@ class DwarfDetailsDock : public QDockWidget {
 public:
 	DwarfDetailsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 	public slots:
-		void show_dwarf(Dwarf *d);
+        void show_dwarf(Dwarf *d);
 
 private:
 	QGridLayout *m_skills_layout;

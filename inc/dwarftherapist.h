@@ -52,7 +52,7 @@ public:
 	OptionsMenu *get_options_menu() {return m_options_menu;}
 	Dwarf *get_dwarf_by_id(int dwarf_id);
 
-    void load_game_translation_tables(DFInstance *df);
+  //  void load_game_translation_tables(DFInstance *df);
     QString get_generic_word(const uint &offset) {return m_generic_words.value(offset, "UNKNOWN");}
     QString get_dwarf_word(const uint &offset) {return m_dwarf_words.value(offset, get_generic_word(offset));}
     bool labor_cheats_allowed() {return m_allow_labor_cheats;}

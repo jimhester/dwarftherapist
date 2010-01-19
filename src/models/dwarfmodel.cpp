@@ -82,11 +82,11 @@ void DwarfModel::load_dwarves() {
 	if (rowCount())
 		removeRows(0, rowCount());
 
-	m_df->attach();
+//	m_df->attach();
 	foreach(Dwarf *d, m_df->load_dwarves()) {
 		m_dwarves[d->id()] = d;
 	}
-	m_df->detach();
+	//m_df->detach();
 	/*! Let's try to guess the wave a dwarf arrived in based on ID.
 	The game appears to assign ids to creates in a serial manner.
 	Since at least 1 season seems to pass in between waves there is a
@@ -406,13 +406,28 @@ void DwarfModel::clear_pending() {
 }
 
 void DwarfModel::commit_pending() {
+    bool success = true;
+
+    QProgressDialog progress( "Committing changes, for best chance of success, don't touch anything!", "Abort Copy", 0,m_dwarves.size(),
+                          qobject_cast<QWidget *>(parent()) );
+    int count = 0;
+    progress.setValue(0);
 	foreach(Dwarf *d, m_dwarves) {
+        qApp->processEvents();
+        if(progress.wasCanceled())
+            break;
 		if (d->pending_changes()) {
-			d->commit_pending();
+            progress.setValue(count);
+            if(!d->commit_pending()){
+                success = false;
+                break;
+            }
+            
 		}
+        count++;
 	}
 	load_dwarves();
-	emit new_pending_changes(0);
+    emit new_pending_changes(0);
 	emit need_redraw();
 }
 

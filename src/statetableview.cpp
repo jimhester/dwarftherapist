@@ -220,8 +220,8 @@ void StateTableView::set_nickname() {
 	Dwarf *d = m_model->get_dwarf_by_id(id);
 	if (d) {
 		QString new_nick = QInputDialog::getText(this, tr("New Nickname"), tr("Nickname"), QLineEdit::Normal, d->nickname());
-		if (new_nick.length() > 28) {
-			QMessageBox::warning(this, tr("Nickname too long"), tr("Nicknames must be under 28 characters long."));
+		if (new_nick.length() > 39) {
+			QMessageBox::warning(this, tr("Nickname too long"), tr("Nicknames must be under 39 characters long."));
 			return;
 		}
 		d->set_nickname(new_nick);
@@ -273,12 +273,12 @@ void StateTableView::set_custom_profession_text() {
     do {
         bool ok;
         if (warn)
-            QMessageBox::warning(this, tr("Name too long!"), tr("Profession names must be 15 characters or shorter!"));
+            QMessageBox::warning(this, tr("Name too long!"), tr("Profession names must be 39 characters or shorter!"));
         prof_name = QInputDialog::getText(this, tr("New Custom Profession Name"), 
             tr("Custom Profession"), QLineEdit::Normal, QString(), &ok);
         if (!ok)
             return;
-        warn = prof_name.length() > 15;
+        warn = prof_name.length() > 39;
     } while(warn);
     
     const QItemSelection sel = selectionModel()->selection();

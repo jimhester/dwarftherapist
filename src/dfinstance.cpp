@@ -29,91 +29,58 @@ THE SOFTWARE.
 #include "utils.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
-#include "cp437codec.h"
 #include "dwarftherapist.h"
 #include "memorysegment.h"
 
+
 DFInstance::DFInstance(QObject* parent)
 	:QObject(parent)
-	,m_pid(0)
-	,m_memory_correction(0)
-	,m_stop_scan(false)
 	,m_is_ok(true)
-	,m_layout(0)
-    ,m_attach_count(0)
+    ,m_numCreatures(0)
+    ,m_DF ("etc/Memory.xml")
 	,m_heartbeat_timer(new QTimer(this))
 {
+    m_codec = new CP437Codec;
+    if(!m_DF.Attach())
+    {
+    /*    QMessageBox::warning(0, tr("Warning"),
+			tr("Unable to locate a running copy of Dwarf "
+			"Fortress, are you sure it's running?"));*/
+        m_is_ok = false;
+    }
+    else{
+    m_mem = m_DF.getMemoryInfo();
+    m_DF.InitViewAndCursor();
+    m_DF.InitViewSize();
+    m_DF.InitMap(); // for getSize();
+    
+    m_numBuildings = m_DF.InitReadBuildings(m_buildingtypes);
+    m_numCreatures = m_DF.InitReadCreatures();
+    m_DF.ReadCreatureMatgloss(m_creaturestypes);
+    m_DF.ReadWoodMatgloss(m_woodstypes);
+    m_DF.ReadPlantMatgloss(m_plantstypes);
+    m_DF.ReadStoneMatgloss(m_stonestypes);
+    m_DF.ReadMetalMatgloss(m_metalstypes);
+    m_DF.ReadItemTypes(m_itemstypes);
+    m_DF.InitReadNameTables(m_names);
+    }
 	connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 	// let subclasses start the timer, since we don't want to be checking before we're connected
 }
-
-QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
-	m_stop_scan = false;
-	QVector<uint> addresses;
-	QByteArrayMatcher matcher(needle);
-
-	int step = 0x1000;
-	char *buffer = new char[step];
-	if (!buffer) {
-		qCritical() << "unable to allocate char buffer of" << step << "bytes!";
-		return addresses;
-	}
-	int count = 0;
-	emit scan_total_steps(m_regions.size());
-	emit scan_progress(0);
-
-	uint bytes_scanned = 0;
-	QTime timer;
-	timer.start();
-	foreach(MemorySegment *seg, m_regions) {	
-		int steps = seg->size / step;
-		if (seg->size % step)
-			steps++;
-		
-		for(uint ptr = seg->start_addr; ptr < seg->end_addr; ptr += step) {
-			if (ptr + step > seg->end_addr)
-				step = seg->end_addr - (ptr + step);
-
-			memset(buffer, 0, step);
-			int bytes_read = read_raw(ptr, step, buffer);
-			if (bytes_read < step && !seg->is_guarded) {
-				LOGW << "tried to read" << step << "bytes starting at" << hex << ptr << "but only got" << dec << bytes_read;
-				continue;
-			}
-
-			int idx = matcher.indexIn(QByteArray(buffer, bytes_read));
-			if (idx != -1) {
-				addresses << (uint)(ptr + idx);
-			}
-			if (m_stop_scan)
-				break;
-			
-		}
-		bytes_scanned += seg->size;
-		emit scan_progress(count++);
-		DT->processEvents();
-		if (m_stop_scan)
-			break;
-	}
-	LOGD << QString("Scanned %L1KB in %L2ms").arg(bytes_scanned / 1024 * 1024).arg(timer.elapsed());
-	delete[] buffer;
-	return addresses;
+QString DFInstance::convertString(const char * str)
+{
+    return m_codec->toUnicode(str,strlen(str));
 }
-
-bool DFInstance::looks_like_vector_of_pointers(const uint &addr) {
-	int start = read_int(addr + 0x4);
-	int end = read_int(addr + 0x8);
-	int entries = (end - start) / sizeof(int);
-	LOGD << "LOOKS LIKE VECTOR? unverified entries:" << entries;
-
-	return start >=0 && 
-		   end >=0 && 
-		   end >= start && 
-		   (end-start) % 4 == 0 &&
-		   start % 4 == 0 &&
-		   end % 4 == 0 &&
-		   entries < 10000;
-	
+QString DFInstance::convertString(const QString & str)
+{
+    return m_codec->toUnicode(str.toAscii().data(),str.size());
+}
+bool DFInstance::find_running_copy() {
+    if (DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()) {
+	    m_heartbeat_timer->start(1000); // check every second for disconnection
+    }
+    m_is_ok = true;
+	return m_is_ok;
 }
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
@@ -122,16 +89,9 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 		LOGW << "not connected";
 		return dwarves;
 	}
-    attach();
-	int creature_vector = m_layout->address("creature_vector");
-    TRACE << "starting with creature vector" << creature_vector;
-	
-	TRACE << "adjusted creature vector" << creature_vector + m_memory_correction;
-    QVector<uint> creatures = enumerate_vector(creature_vector + m_memory_correction);
-	TRACE << "FOUND" << creatures.size() << "creatures";
-	if (creatures.size() > 0) {
-		for (int offset=0; offset < creatures.size(); ++offset) {
-			Dwarf *d = Dwarf::get_dwarf(this, creatures[offset]);
+ 	if (m_numCreatures > 0) {
+		for (uint offset=0; offset < m_numCreatures; ++offset) {
+			Dwarf *d = Dwarf::get_dwarf(this, offset);
 			if (d) {
 				dwarves.append(d);
 				TRACE << "FOUND DWARF" << offset << d->nice_name();
@@ -139,11 +99,11 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 				TRACE << "FOUND OTHER CREATURE" << offset;
 			}
 		}
+        m_DF.ForceResume();
     } else {
         // we lost the fort!
         m_is_ok = false;
     }
-    detach();
 
     /*TEST RELATIONSHIPS
 	int relations_found = 0;
@@ -170,152 +130,124 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 	LOGD << "relations found" << relations_found;
 	*/
 
-	LOGI << "found" << dwarves.size() << "dwarves out of" << creatures.size() << "creatures";
+	LOGI << "found" << dwarves.size() << "dwarves out of" << m_numCreatures << "creatures"; //creatures.size() << "creatures";
 	return dwarves;
 }
 
 void DFInstance::heartbeat() {
 	// simple read attempt that will fail if the DF game isn't running a fort, or isn't running at all
-    QVector<uint> creatures = enumerate_vector(m_layout->address("creature_vector") + m_memory_correction);
-	if (creatures.size() < 1) {
+  m_DF.Suspend();
+    uint32_t creaturesSize = m_DF.InitReadCreatures();
+    m_DF.Resume();
+    //QVector<uint> creatures = enumerate_vector(m_layout->address("creature_vector") + m_memory_correction);
+	if (creaturesSize < 1) {
 		// no game loaded, or process is gone
 		emit connection_interrupted();
 	}
 }
 
-bool DFInstance::is_valid_address(const uint &addr) {
-	bool valid = false;
-	foreach(MemorySegment *seg, m_regions) {
-		if (seg->contains(addr)) {
-			valid = true;
-			break;
-		}
-	}
-	return valid;
+QString DFInstance::translateName(const t_lastname &name , string trans)
+{
+    QString qname(m_DF.TranslateName(name, m_names,trans).c_str());
+    qname = qname.toLower();
+    qname[0]=qname[0].toUpper();
+    return(qname);
+}
+QString DFInstance::translateName(const t_squadname& name, string trans)
+{
+    QString qname(m_DF.TranslateName(name, m_names,trans).c_str());
+    qname = qname.toLower();
+    qname[0]=qname[0].toUpper();
+    return(qname);
+}
+QString DFInstance::getCreatureType(uint type)
+ {
+   if(m_creaturestypes.size() > type)
+     {
+       return QString(m_creaturestypes[type].name);
+     }
+     return QString("");
+}
+QString DFInstance::getBuildingType(uint type)
+{
+  if(m_buildingtypes.size() > type)
+    {
+        return QString(m_buildingtypes[type].c_str());
+    }
+    return QString("");
+}
+QString DFInstance::getMetalType(uint type)
+{
+  if(m_metalstypes.size() > type)
+    {
+        return QString(m_metalstypes[type].name);
+    }
+    return QString("");
+}
+QString DFInstance::getStoneType(uint type)
+{
+  if(m_stonestypes.size() > type)
+    {
+        return QString(m_stonestypes[type].name);
+    }
+    return QString("");
+}
+QString DFInstance::getWoodType(uint type)
+{
+  if(m_woodstypes.size() > type)
+    {
+        return QString(m_woodstypes[type].name);
+    }
+    return QString("");
+}
+QString DFInstance::getPlantType(uint type)
+{
+  if(m_plantstypes.size() > type)
+    {
+        return QString(m_plantstypes[type].name);
+    }
+    return QString("");
 }
 
-QByteArray DFInstance::get_data(const uint &addr, const uint &size) {
-	char *buffer = new char[size];
-	memset(buffer, 0, size);
-	read_raw(addr, size, buffer);
-	QByteArray data(buffer, size);
-	delete[] buffer;
-	return data;
+QString DFInstance::getPlantDrinkType(uint type)
+{
+  if(m_plantstypes.size() > type)
+    {
+        return QString(m_plantstypes[type].drink_name);
+    }
+    return QString("");
 }
-
-//! ahhh convenience
-QString DFInstance::pprint(const uint &addr, const uint &size) {
-	return pprint(get_data(addr, size), addr);
+QString DFInstance::getPlantFoodType(uint type)
+{
+  if(m_plantstypes.size() > type)
+    {
+        return QString(m_plantstypes[type].food_name);
+    }
+    return QString("");
 }
-
-QString DFInstance::pprint(const QByteArray &ba, const uint &start_addr) {
-	QString out = "    ADDR   | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F | TEXT\n";
-	out.append("------------------------------------------------------------------------\n");
-	int lines = ba.size() / 16;
-	if (ba.size() % 16)
-		lines++;
-
-	for(int i = 0; i < lines; ++i) {
-		uint offset = start_addr + i * 16;
-		out.append(QString("0x%1").arg(offset, 8, 16, QChar('0')));
-		out.append(" | ");
-		for (int c = 0; c < 16; ++c) {
-			out.append(ba.mid(i*16 + c, 1).toHex());
-			out.append(" ");
-		}
-		out.append("| ");
-		for (int c = 0; c < 16; ++c) {
-			QByteArray tmp = ba.mid(i*16 + c, 1);
-			if (tmp.at(0) == 0)
-				out.append(".");
-			else if (tmp.at(0) <= 126 && tmp.at(0) >= 32)
-				out.append(tmp);
-			else
-				out.append(tmp.toHex());
-		}
-		//out.append(ba.mid(i*16, 16).toPercentEncoding());
-		out.append("\n");
-	}
-	return out;
+QString DFInstance::getPlantExtractType(uint type)
+{
+  if(m_plantstypes.size() > type)
+    {
+        return QString(m_plantstypes[type].extract_name);
+    }
+    return QString("");
 }
-
-QVector<uint> DFInstance::find_vectors(const uint &num_entries, const uint &fuzz/* =0 */, const uint &entry_size/* =4 */) {
-	m_stop_scan = false;
-	QVector<uint> vectors;
-
-	/* 
-	glibc++ does vectors like so...
-	|4bytes      | 4bytes    | 4bytes
-	START_ADDRESS|END_ADDRESS|END_ALLOCATOR
-
-	MSVC++ does vectors like so...
-	| 4bytes     | 4bytes      | 4 bytes   | 4bytes
-	ALLOCATOR    |START_ADDRESS|END_ADDRESS|END_ALLOCATOR
-	*/
-	
-	uint int1 = 0; // holds the start val
-	uint int2 = 0; // holds the end val 
-
-	// progress reporting
-	uint total_bytes = 0;
-	uint bytes_scanned = 0;
-	foreach(MemorySegment *seg, m_regions) {
-		total_bytes += seg->size;
-	}
-	uint report_every_n_bytes = total_bytes / 100;
-	emit scan_total_steps(100);
-	emit scan_progress(0);
-	// iterate over all known memory segments
-	foreach(MemorySegment *seg, m_regions) {
-		//LOGD << "SCANNING REGION" << hex << seg->start_addr << "-" << seg->end_addr << "BYTES:" << dec << seg->size;
-
-		// this buffer will hold the entire memory segment (may need to toned down a bit)
-		char *buffer = new (std::nothrow) char[seg->size];
-		if (buffer == 0) {
-			LOGC << "unable to allocate char buffer of" << seg->size << "bytes!";
-			continue;
-		}
-		memset(buffer, 0, seg->size); // 0 out the buffer
-
-		// this may read multiple times to populate the entire region in our buffer
-		uint bytes_read = read_raw(seg->start_addr, seg->size, buffer);
-		if (bytes_read < seg->size) {
-			LOGW << "tried to read" << seg->size << "bytes starting at" << hex 
-				 << seg->start_addr << "but only got" << dec << bytes_read;
-			continue;
-		}
-
-		// we now have this entire memory segment inside buffer. So lets step through it looking for things that look like vectors of pointers.
-		// we read a uint into int1 and 4 bytes later we read another uint into int2. If int1 is a vector head, then int2 will be larger than int2, 
-		// evenly divisible by 4, and the difference between the two (divided by four) will tell us how many pointers are in this array. We can also
-		// check to make sure int1 and int2 reside in valid memory regions. If all of this adds up, then odds are pretty good we've found a vector 
-		for (uint i = 0; i < seg->size; i += 4) {
-			memcpy(&int1, buffer + i, 4);
-			memcpy(&int2, buffer + i + 4, 4);
-			if (int2 >= int1 && is_valid_address(int1) && is_valid_address(int2)) {
-				uint bytes = int2 - int1;
-				uint entries = bytes / entry_size;
-				int diff = entries - num_entries;
-				if ((uint)qAbs(diff) <= fuzz) {
-					uint vector_address = seg->start_addr + i - VECTOR_POINTER_OFFSET;
-					QVector<uint> addrs = enumerate_vector(vector_address);
-					diff = addrs.size() - num_entries;
-					if ((uint)qAbs(diff) <= fuzz) {
-						vectors << vector_address;
-					}
-				}
-				if (m_stop_scan)
-					break;
-			}
-			bytes_scanned += 4;
-			if (i % 400 == 0)
-				emit scan_progress(bytes_scanned / report_every_n_bytes);
-		}
-		delete[] buffer;
-		DT->processEvents();
-		if (m_stop_scan)
-			break;
-	}
-	emit scan_progress(100);
-	return vectors;
+QString DFInstance::getItemType(uint type,uint index)
+{
+  if(m_itemstypes.size() > type)
+    {
+        if(m_itemstypes[type].size() > index)
+        {
+            return QString(m_itemstypes[type][index].name);
+        }
+    }
+    return QString("");
+}
+DFInstance::~DFInstance(){
+    if(m_is_ok){
+        m_DF.FinishReadCreatures();
+        m_DF.FinishReadNameTables();
+        m_DF.Detach();
+    }
 }

@@ -49,7 +49,7 @@ THE SOFTWARE.
 #include "dwarfdetailsdock.h"
 #include "columntypes.h"
 #include "rotatedheader.h"
-#include "scanner.h"
+//#include "scanner.h"
 #include "scriptdialog.h"
 
 #include "dfinstance.h"
@@ -74,13 +74,15 @@ MainWindow::MainWindow(QWidget *parent)
 	, m_settings(0)
 	, m_model(new DwarfModel(this))
 	, m_proxy(new DwarfModelProxy(this))
-	, m_scanner(0)
+	//, m_scanner(0)
     , m_script_dialog(new ScriptDialog(this))
 	, m_http(0)
 	, m_reading_settings(false)
 	, m_temp_cp(0)
     , m_dwarf_name_completer(0)
 {
+    m_refreshTimer = new QTimer(this);
+    
 	ui->setupUi(this);
 	m_view_manager = new ViewManager(m_model, m_proxy, this);
 	ui->v_box->addWidget(m_view_manager);
@@ -111,6 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
 	LOGD << "setting up connections for MainWindow";
+    connect(m_refreshTimer, SIGNAL(timeout()),this,SLOT(read_dwarves()));
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
@@ -154,6 +157,15 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
 	delete ui;
+}
+
+void MainWindow::set_refresh(){
+    if(m_refreshTimer->timerId() == -1){
+        m_refreshTimer->start(2000);
+    }
+    else{
+        m_refreshTimer->stop();
+    }
 }
 
 void MainWindow::read_settings() {
@@ -217,7 +229,7 @@ void MainWindow::connect_to_df() {
 	}
 	// find_running_copy can fail for several reasons, and will take care of 
 	// logging and notifying the user.
-#ifdef _WINDOWS
+/*#ifdef _WINDOWS
 	m_df = new DFInstanceWindows();
 #endif
 #ifdef _OSX
@@ -225,12 +237,14 @@ void MainWindow::connect_to_df() {
 #endif
 #ifdef _LINUX
 	m_df = new DFInstanceLinux();
-#endif
+#endif*/
+    m_df = new DFInstance();
     if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
-		m_scanner = new Scanner(m_df, this);
-        LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
-        DT->load_game_translation_tables(m_df);
-        m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
+//		m_scanner = new Scanner(m_df, this);
+       // LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
+    //    DT->load_game_translation_tables(m_df);
+    //    m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
+        m_lbl_status->setText(tr("Connected to ") + QString(m_df->getMem()->getVersion().c_str()));
 		connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
 		set_interface_enabled(true);
 		if (DT->user_settings()->value("options/read_on_startup", true).toBool()) {
@@ -257,6 +271,13 @@ void MainWindow::read_dwarves() {
         lost_df_connection();
 		return;
 	}
+  /*  ui->
+    children()*/
+
+    QScrollBar * v_bar = m_view_manager->get_stv()->verticalScrollBar();
+    QScrollBar * h_bar = m_view_manager->get_stv()->horizontalScrollBar();
+    int oldVVal = v_bar->value();
+    int oldHVal = h_bar->value();
 	m_model->set_instance(m_df);
 	m_model->load_dwarves();
 
@@ -281,12 +302,14 @@ void MainWindow::read_dwarves() {
         m_dwarf_name_completer->setCaseSensitivity(Qt::CaseInsensitive);
         ui->le_filter_text->setCompleter(m_dwarf_name_completer);
     }
+    v_bar->setValue(oldVVal);
+    h_bar->setValue(oldHVal);
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {
 	ui->act_connect_to_DF->setEnabled(!enabled);
 	ui->act_read_dwarves->setEnabled(enabled);
-	ui->act_scan_memory->setEnabled(enabled);
+	//ui->act_scan_memory->setEnabled(enabled);
 	ui->act_expand_all->setEnabled(enabled);
 	ui->act_collapse_all->setEnabled(enabled);
 	ui->cb_group_by->setEnabled(enabled);
@@ -348,9 +371,9 @@ void MainWindow::version_check_finished(bool error) {
 	}
 }
 
-void MainWindow::scan_memory() {
+/*void MainWindow::scan_memory() {
 	m_scanner->show();
-}
+}*/
 
 void MainWindow::set_group_by(int group_by) {
 	write_settings();

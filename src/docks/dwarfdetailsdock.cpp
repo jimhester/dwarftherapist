@@ -22,7 +22,6 @@ THE SOFTWARE.
 */
 #include "dwarfdetailsdock.h"
 #include "dwarfdetailswidget.h"
-
 DwarfDetailsDock::DwarfDetailsDock(QWidget *parent, Qt::WindowFlags flags)
 	: QDockWidget(parent, flags)
 	, m_skills_layout(new QGridLayout(this))

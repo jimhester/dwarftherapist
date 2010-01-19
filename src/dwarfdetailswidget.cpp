@@ -32,15 +32,31 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
     , ui(new Ui::DwarfDetailsWidget)
 {
+    m_refreshTimer = new QTimer(this);
+    connect(m_refreshTimer, SIGNAL(timeout()),this,SLOT(move_dwarf()));
 	ui->setupUi(this);
 }
-
+void DwarfDetailsWidget::set_refresh(){
+    if(m_refreshTimer->timerId() == -1){
+        m_refreshTimer->start(200);
+    }
+    else{
+        m_refreshTimer->stop();
+    }
+}
+void DwarfDetailsWidget::move_dwarf(){
+    m_d->refresh_data();
+    m_d->move_view_to();
+}
 void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
+    m_d = d;
 	// Draw the name/profession text labels...
     ui->lbl_dwarf_name->setText(d->nice_name());
     ui->lbl_translated_name->setText(QString("(%1)").arg(d->translated_name()));
     ui->lbl_profession->setText(d->profession());
     ui->lbl_current_job->setText(QString("%1 %2").arg(d->current_job_id()).arg(d->current_job()));
+//    ui->lbl_location->setText(QString("%1 %2 %3").arg(d->x()).arg(d->y()).arg(d->z()));
+  //  ui->btn_location->setText("Goto Dwarf");
 
     QMap<QProgressBar*, int> things;
     int str = d->strength();
@@ -165,4 +181,37 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     }
     tw_traits->setSortingEnabled(true);
     tw_traits->sortItems(1, Qt::DescendingOrder);
+
+    //Likes Table
+    const QVector<QString> *likes = d->likes();
+    int maxSize = 0;
+    for(int i = 0;i<3;i++){
+        if(likes[i].size() > maxSize)
+            maxSize = likes[i].size();
+    }
+    QTableWidget *tw_likes = new QTableWidget(maxSize,3,this);
+    ui->vbox_main->addWidget(tw_likes, 10);
+    m_cleanup_list << tw_likes;
+    for(int i = 0;i<tw_likes->rowCount();i++){
+        tw_likes->setRowHeight(i,14);
+    }
+    tw_likes->setEditTriggers(QTableWidget::NoEditTriggers);
+	tw_likes->setWordWrap(true);
+    tw_likes->setShowGrid(false);
+    tw_likes->setGridStyle(Qt::NoPen);
+    tw_likes->setAlternatingRowColors(true);
+    tw_likes->setHorizontalHeaderLabels(QStringList() << "Material Likes" << "Item Likes" << "Food Likes");
+    tw_likes->verticalHeader()->hide();
+    tw_likes->horizontalHeader()->setStretchLastSection(true);
+    tw_likes->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+    tw_likes->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+    tw_likes->setSortingEnabled(false);
+    for(int j = 0;j<3;j++){
+        for(int i = 0;i<likes[j].size();i++){
+            QString currentLike = likes[j][i];
+            currentLike[0] = currentLike[0].toTitleCase();
+            QTableWidgetItem *like = new QTableWidgetItem(currentLike);
+            tw_likes->setItem(i,j,like);
+        }
+    }
 }

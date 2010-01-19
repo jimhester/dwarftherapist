@@ -1,3 +1,24 @@
+RELEASE DFhack 0.0.5 (Janurary 12, 2009)
+CHANGES DFHack 0.0.1
+===============================================================================
+MAJOR CHANGES:
+
+ * Made the name scripting much more robust, you can now do it from any menu and pause state and it will work correctly (but not return you to the previous place)
+
+RELEASE DFhack (December 24, 2009)
+CHANGES SINCE 0.4.2
+===============================================================================
+MAJOR CHANGES:
+
+ * DFHack backend
+ * Zooming to the currently selected Dwarf
+ * Following the currently selected Dwarf
+ * Periodic refreshing of all the dwarves (so you can watch their jobs change over time)
+ * Added new grouping method "Current Job", and it rules (Fixed issue 9)
+ * Dwarf material, item, and food likes
+ * Nick Name and Custom Profession changing by using simulated key presses
+ * Filtering by custom scripting
+
 RELEASE 0.4.2 (October 26, 2009)
 CHANGES SINCE 0.4.1
 ===============================================================================

@@ -35,7 +35,7 @@ class Dwarf;
 class AboutDialog;
 class CustomProfession;
 class ViewManager;
-class Scanner;
+//class Scanner;
 class ScriptDialog;
 
 namespace Ui
@@ -64,7 +64,8 @@ public:
 		// DF related
 		void connect_to_df();
 		void read_dwarves();
-		void scan_memory();
+        void set_refresh();
+		//void scan_memory();
 		void new_pending_changes(int);
 		void lost_df_connection();
 		
@@ -106,13 +107,14 @@ private:
 	DwarfModelProxy *m_proxy;
 	AboutDialog *m_about_dialog;
 	CustomProfession *m_temp_cp;
-	Scanner *m_scanner;
+	//Scanner *m_scanner;
     ScriptDialog *m_script_dialog;
 	QHttp *m_http;
 	bool m_reading_settings;
     bool m_show_result_on_equal; //! used during version checks
     QCompleter *m_dwarf_name_completer;
     QStringList m_dwarf_names_list;
+    QTimer *m_refreshTimer;
 
 	void closeEvent(QCloseEvent *evt); // override;
 

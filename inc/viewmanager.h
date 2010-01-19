@@ -66,6 +66,7 @@ public:
 		void collapse_all();
 		void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
 		void jump_to_profession(QListWidgetItem* current, QListWidgetItem* previous);
+        StateTableView *get_stv(int idx = -1); // need to make public to get the verticle and horizontal bar states
 
 private:
 	QList<GridView*> m_views;
@@ -73,8 +74,6 @@ private:
 	DwarfModelProxy *m_proxy;
 	QToolButton *m_add_tab_button;
     QList<Dwarf*> m_selected_dwarfs;
-
-    StateTableView *get_stv(int idx = -1);
 
 	private slots:
 		//! used when adding tabs via the tool button

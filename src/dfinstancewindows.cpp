@@ -50,7 +50,7 @@ DFInstanceWindows::~DFInstanceWindows() {
 	}
 }
 
-uint DFInstanceWindows::calculate_checksum() {
+/*uint DFInstanceWindows::calculate_checksum() {
 	char expect_M = read_char(m_base_addr);
 	char expect_Z = read_char(m_base_addr + 0x1);
 
@@ -66,9 +66,9 @@ uint DFInstanceWindows::calculate_checksum() {
 
 	uint timestamp = read_uint(pe_header + 4 + 2 * 2);
 	return timestamp;
-}
+}*/
 
-QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
+/*QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
 	TRACE << "beginning vector enumeration at" << addr;
 	QVector<uint> addresses;
 	uint start = read_uint(addr + 4);
@@ -95,9 +95,9 @@ QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
 	}
 	TRACE << "FOUND" << count << "addresses in vector";
 	return addresses;
-}
+}*/
 
-QString DFInstanceWindows::read_string(const uint &addr) {
+/*QString DFInstanceWindows::read_string(const uint &addr) {
 	int len = read_int(addr + STRING_LENGTH_OFFSET);
 	int cap = read_int(addr + STRING_CAP_OFFSET);
 	uint buffer_addr = addr + STRING_BUFFER_OFFSET;
@@ -182,7 +182,7 @@ uint DFInstanceWindows::read_raw(const uint &addr, const uint &bytes, void *buff
 	ReadProcessMemory(m_proc, (LPCVOID)addr, (void*)buffer, sizeof(uchar) * bytes, (DWORD*)&bytes_read);
 	/*if (!ok || bytes_read != bytes)
 		LOGW << "ERROR: tried to get" << bytes << "bytes from" << hex << addr << "but only got" 
-			 << dec << bytes_read << "Windows System Error(" << dec << GetLastError() << ")";*/
+			 << dec << bytes_read << "Windows System Error(" << dec << GetLastError() << ")";
 	return bytes_read;
 }
 
@@ -192,14 +192,14 @@ uint DFInstanceWindows::write_raw(const uint &addr, const uint &bytes, void *buf
 	Q_ASSERT(bytes_written == bytes);
 	return bytes_written;
 }
-
+*/
 bool DFInstanceWindows::find_running_copy() {
-	LOGD << "attempting to find running copy of DF by window handle";
+	/*LOGD << "attempting to find running copy of DF by window handle";
 	m_is_ok = false;
 
-	HWND hwnd = FindWindow(L"OpenGL", L"Dwarf Fortress");
+	HWND hwnd = FindWindow(LPCSTR"OpenGL", L"Dwarf Fortress");
 	if (!hwnd)
-		hwnd = FindWindow(L"SDL_app", L"Dwarf Fortress");
+		hwnd = FindWindow(LPCSTR"SDL_app", L"Dwarf Fortress");
 	if (!hwnd)
 		hwnd = FindWindow(NULL, L"Dwarf Fortress");
 
@@ -327,11 +327,11 @@ bool DFInstanceWindows::find_running_copy() {
 			m_highest_address = seg->end_addr;
 	}
 	LOGD << "MEMORY SEGMENT SUMMARY: accepted" << accepted << "rejected" << rejected << "total" << accepted + rejected;
-	
+	*/
     if (DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()) {
 	    m_heartbeat_timer->start(1000); // check every second for disconnection
     }
-	m_is_ok = true;
+    m_is_ok = true;
 	return m_is_ok;
 }
 #endif

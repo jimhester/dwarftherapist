@@ -33,15 +33,18 @@ Squad::Squad(Dwarf *leader, DFInstance *df, QObject *parent)
     , m_parent_squad(0)
 {
     m_members.clear();
+    m_name = leader->get_squad_name();
+    m_generic_name = leader->get_generic_squad_name();
+//    MemoryLayout *mem = df->memory_layout();
+ //   for (int i = 0; i < 24; i+=4) {
+      //  leader
+//        int word_offset = df->read_int(leader->address() + mem->dwarf_offset("squad_name") + i);
+//        if (word_offset == 0 || word_offset == 0xFFFFFFFF)
+//            continue;
+//        m_name += DT->get_dwarf_word(word_offset);
+ //       m_generic_name += DT->get_generic_word(word_offset);
+  //  }
 
-    MemoryLayout *mem = df->memory_layout();
-    for (int i = 0; i < 24; i+=4) {
-        int word_offset = df->read_int(leader->address() + mem->dwarf_offset("squad_name") + i);
-        if (word_offset == 0 || word_offset == 0xFFFFFFFF)
-            continue;
-        m_name += DT->get_dwarf_word(word_offset);
-        m_generic_name += DT->get_generic_word(word_offset);
-    }
     
     
     //Squad *m_parent_squad;

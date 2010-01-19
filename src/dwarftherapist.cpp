@@ -191,6 +191,7 @@ void DwarfTherapist::import_existing_professions() {
 		if (!cp) { // import it
 			cp = new CustomProfession(d, this);
 			cp->set_name(prof);
+            vector<int> test = cp->get_enabled_labors().toStdVector();
 			m_custom_professions << cp;
 			imported++;
 		}
@@ -305,8 +306,8 @@ Dwarf *DwarfTherapist::get_dwarf_by_id(int dwarf_id) {
 	return m_main_window->get_model()->get_dwarf_by_id(dwarf_id);
 }
 
-void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
-    m_generic_words.clear();
+//void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
+    /*m_generic_words.clear();
     m_dwarf_words.clear();
 
 	uint generic_lang_table = df->memory_layout()->address("language_vector") + df->get_memory_correction();
@@ -345,5 +346,7 @@ void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
 			m_dwarf_words << df->read_string(word_ptr);
 		}
 	}
+    
     df->detach();
-}
+ 
+}*/

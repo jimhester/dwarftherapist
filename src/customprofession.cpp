@@ -57,9 +57,11 @@ CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
 {
 	GameDataReader *gdr = GameDataReader::ptr();	
 	QList<Labor*> labors = gdr->get_ordered_labors();
+
 	
 	foreach(Labor *l, labors) {
-		if (m_dwarf && m_dwarf->labor_enabled(l->labor_id))
+		if (m_dwarf && m_dwarf->labor_enabled(l->labor_id) && l->labor_id != -1)
+            
 			add_labor(l->labor_id);
 	}
 }
@@ -95,7 +97,7 @@ Get a vector of all enabled labors in this template by labor_id
 QVector<int> CustomProfession::get_enabled_labors() {
 	QVector<int> labors;
 	foreach(int labor, m_active_labors.uniqueKeys()) {
-		if (m_active_labors.value(labor)) {
+		if (m_active_labors.value(labor) && labor != -1) {
 			labors << labor;
 		}
 	}

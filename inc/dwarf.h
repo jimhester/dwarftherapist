@@ -26,6 +26,11 @@ THE SOFTWARE.
 #include <QtGui>
 
 #include "skill.h"
+using namespace std;
+#include "dfhack/integers.h"
+#include "dfhack/DFTypes.h"
+#include "dfhack/DFHackAPI.h"
+using namespace DFHack;
 
 class DFInstance;
 class CustomProfession;
@@ -33,10 +38,10 @@ class CustomProfession;
 class Dwarf : public QObject
 {
 	Q_OBJECT
-    Dwarf(DFInstance *df, const uint &addr, QObject *parent=0); //private, use the static get_dwarf() method
+        Dwarf(DFInstance *df, const uint &index, QObject *parent=0); //private, use the static get_dwarf() method
 
 public:
-    static Dwarf* get_dwarf(DFInstance *df, const uint &address);
+    static Dwarf* get_dwarf(DFInstance *df, const uint &index);
 	virtual ~Dwarf();
 
 	typedef enum {
@@ -50,9 +55,17 @@ public:
 		DH_TOTAL_LEVELS
 	} DWARF_HAPPINESS;
 
+    typedef enum
+    {
+        FAIL = 0,
+        MATERIAL = 1,
+        ITEM = 2,
+        FOOD = 3
+    } LIKETYPE;
+
 	// getters
     //! Return the memory address (in hex) of this creature in the remote DF process
-    uint address() {return m_address;}
+   // uint address() {return m_address;}
     
     //! return the the unique id for this creature
 	int id() {return m_id;}
@@ -143,6 +156,17 @@ public:
     //! return the id of the job this dwarf is currently doing
     const short &current_job_id() {return m_current_job_id;}
 
+    Q_INVOKABLE bool has_like(QString like);
+    //Q_INVOKABLE bool hasLikeRegex(QString like);
+
+    //! return the location of the dwarf
+    uint x() { return m_x; }
+    uint y() { return m_y; }
+    uint z() { return m_z; }
+
+    //! return the likes of the dwarf
+    const QVector<QString>* likes(){return m_likes;}
+
     //! return the total number of changes to this dwarf are uncommitted
     int pending_changes();
 
@@ -172,7 +196,7 @@ public:
 	void clear_pending();
 
     //! write all uncommitted pending changes back to the game (DANGEROUS METHOD)
-	void commit_pending();
+	bool commit_pending();
 
     //! set's the pending custom profession text for this dwarf
     void set_custom_profession_text(const QString &prof_text);
@@ -211,6 +235,9 @@ public:
     //! return a pointer to this dwarf's squad leader, or 0 if no squad leader is set
     Dwarf *get_squad_leader();
 
+    QString get_squad_name() { return m_squad_name;}
+    QString get_generic_squad_name() { return m_generic_squad_name;}
+
     /*! return the dwarf string name of this dwarf's squad
     If this dwarf is not a squad leader but still in a squad, this method will return the
     name of the squad if this dwarf were squad leader. If you want the name of the squad
@@ -230,37 +257,59 @@ public:
         return m_first_name;
     }
 
+    /************************************************************************/
+    /* CustomName and Profession Changing                                   */
+    /************************************************************************/
+
+    bool waitTillChanged(string changeValue, bool isName);
+    bool waitTillScreenState(string screenState,bool EqualTo=true);
+    bool waitTillCursorState(bool On);
+    bool waitTillMenuState(uint32_t menuState,bool EqualTo=true);
+    bool moveToBaseWindow();
+    bool setCursorToCreature();
+
+    bool write_string(const QString &text,bool isName); // if not name, has to be profession
+
     public slots:
         //! called when global user settings change
 		void read_settings();
 		//! show a dialog with a memory dump for this dwarf...
-		void dump_memory();
+		//void dump_memory();
         //! show details for this dwarf in a new window...
         void show_details();
+        //! move DF veiw to dwarf;
+        void move_view_to();
 
 
 
 private:
-	DFInstance *m_df;
+    t_creature m_cre;
+    DFInstance *m_df;
+    uint m_index;
     uint m_address;
-	int m_race_id;
-	DWARF_HAPPINESS m_happiness;
-	int m_raw_happiness;
-	int m_money;
-	bool m_is_male;
-	bool m_show_full_name;
-	int m_total_xp;
-	int m_migration_wave;
+    int m_race_id;
+    DWARF_HAPPINESS m_happiness;
+    int m_raw_happiness;
+    int m_money;
+    bool m_is_male;
+    bool m_show_full_name;
+    int m_total_xp;
+    int m_migration_wave;
+    int m_raw_profession;
+
+    uint m_x;
+    uint m_y;
+    uint m_z;
 	
-    QString read_profession(const uint &addr);
-    QString read_last_name(const uint &addr, bool use_generic=false);
-    QString read_squad_name(const uint &addr, bool use_generic=false);
-    QVector<Skill> read_skills(const uint &addr);
+    QString read_profession();
+    QVector<Skill> read_skills();
     void read_prefs(const uint &addr);
-    void read_labors(const uint &addr);
+    void read_labors();
 	void calc_names();
-    void read_traits(const uint &addr);
-    void read_current_job(const uint &addr);
+    void read_traits() ; 
+    void read_current_job() ;
+    void read_likes();
+    LIKETYPE getLikeName(DFHack::t_like & like, QString & retLike);
 
 	int m_id;
     Q_PROPERTY(QString first_name READ first_name) // no setters (scripting read-only)
@@ -270,7 +319,7 @@ private:
 	QString m_nice_name, m_translated_name; // used to cache this value
 	QString m_custom_profession, m_pending_custom_profession;
 	QString m_profession;
-	int m_raw_profession;
+
 	bool m_can_set_labors;
 	int m_strength;
 	int m_agility;
@@ -283,6 +332,8 @@ private:
 	QMap<int, ushort> m_pending_labors;
 	QList<QAction*> m_actions; // actions suitable for context menus
     
+    QVector<QString> m_likes[3];
+
     // Squad settings
     int m_squad_leader_id;
     QString m_squad_name;
@@ -293,5 +344,4 @@ private:
 signals:
 	void name_changed();
 };
-
 #endif // DWARF_H

@@ -24,6 +24,13 @@ THE SOFTWARE.
 #define DFINSTANCE_H
 
 #include <QtGui>
+#include "cp437codec.h"
+using namespace std;
+#include "dfhack/integers.h"
+#include "dfhack/DFTypes.h"
+#include "dfhack/DFHackAPI.h"
+#include "dfhack/DFMemInfo.h"
+using namespace DFHack;
 
 class Dwarf;
 class MemoryLayout;
@@ -33,92 +40,55 @@ class DFInstance : public QObject {
 	Q_OBJECT
 public:
 	DFInstance(QObject *parent=0);
-	virtual ~DFInstance(){}
+	~DFInstance();
 
-	// factory ctor
-	virtual bool find_running_copy() = 0;
+	bool find_running_copy();
 
 	// accessors
-    uint get_heap_start_address() {return m_heap_start_address;}
-    uint get_memory_correction() {return m_memory_correction;}
-    uint get_base_address() {return m_base_addr;}
+
+    DFHack::API * getAPI(){return &m_DF;}
+    DFHack::memory_info * getMem(){return &m_mem;}
+    QString getCreatureType(uint type);
+    QString getBuildingType(uint type);
+    QString getStoneType(uint type);
+    QString getMetalType(uint type);
+    QString getItemType(uint type, uint index);
+    QString getWoodType(uint type);
+    QString getPlantType(uint type);
+    QString getPlantDrinkType(uint type);
+    QString getPlantFoodType(uint type);
+    QString getPlantExtractType(uint type);
+    QString convertString(const char *);
+    QString convertString(const QString &);
+
 	bool is_ok(){return m_is_ok;}
 	
-	// brute force memory scanning methods
-	bool is_valid_address(const uint &addr);
-    bool looks_like_vector_of_pointers(const uint &addr);
-
-    virtual QVector<uint> enumerate_vector(const uint &addr) = 0;
-    virtual char read_char(const uint &addr) = 0;
-    virtual short read_short(const uint &addr) = 0;
-    virtual ushort read_ushort(const uint &addr) = 0;
-    virtual int read_int(const uint &addr) = 0;
-    virtual uint read_uint(const uint &addr) = 0;
-    virtual uint read_raw(const uint &addr, const uint &bytes, void *buffer) = 0;
-	QVector<uint> scan_mem(const QByteArray &needle);
-    virtual QString read_string(const uint &addr) = 0;
-
-    QByteArray get_data(const uint &addr, const uint &size);
-    QString pprint(const uint &addr, const uint &size);
-    QString pprint(const QByteArray &ba, const uint &start_addr=0);
+    QString translateName(const t_lastname &,string trans);
+    QString translateName(const t_squadname &, string trans);
 	
-	
-	// Mapping methods
-	QVector<uint> find_vectors(const uint &num_entries, const uint &fuzz=0, const uint &entry_size=4);
-
-	// Methods for when we know how the data is layed out
-	MemoryLayout *memory_layout() {return m_layout;}
 	QVector<Dwarf*> load_dwarves();
 
-	// Writing
-    virtual uint write_raw(const uint &addr, const uint &bytes, void *buffer) = 0;
-    virtual uint write_string(const uint &addr, const QString &str) = 0;
-    virtual uint write_int(const uint &addr, const int &val) = 0;
-	
-    bool is_attached() {return m_attach_count > 0;}
-    virtual bool attach() = 0;
-    virtual bool detach() = 0;
+private:
+    bool m_is_ok;
+    CP437Codec *m_codec;
+    vector<t_matgloss> m_creaturestypes;
+    vector<t_matglossPlant> m_plantstypes;
+    vector<t_matgloss> m_stonestypes;
+    vector<t_matgloss> m_metalstypes;
+    vector<t_matgloss> m_woodstypes;
+    vector< vector<t_itemType> > m_itemstypes;
 
-	// Windows string offsets
-#ifdef Q_WS_WIN
-	static const int STRING_BUFFER_OFFSET = 4;
-	static const int STRING_LENGTH_OFFSET = 20;
-	static const int STRING_CAP_OFFSET = 24;
-	static const int VECTOR_POINTER_OFFSET = 4;
-#endif
-#ifdef Q_WS_X11
-	static const int STRING_BUFFER_OFFSET = 0;
-	static const int VECTOR_POINTER_OFFSET = 0;
-#endif
-#ifdef Q_WS_MAC
-	static const int STRING_BUFFER_OFFSET = 0;
-	static const int VECTOR_POINTER_OFFSET = 0;
-#endif
-
-	public slots:
-		// if a menu cancels our scan, we need to know how to stop
-		void cancel_scan() {m_stop_scan = true;}
-
-protected:
-	// handy util methods
-    virtual uint calculate_checksum() = 0;
-
-	int m_pid;
-	uint m_base_addr;
-	uint m_memory_size;
-    uint m_memory_correction;
-	uint m_lowest_address;
-	uint m_highest_address;
-    uint m_heap_start_address;
-	bool m_stop_scan; // flag that gets set to stop scan loops
-	bool m_is_ok;
-	MemoryLayout *m_layout;
-	QVector<MemorySegment*> m_regions;
+    uint m_numCreatures;
+    map<string, vector<string> > m_names;
     int m_attach_count;
-	QTimer *m_heartbeat_timer;
+    QTimer *m_heartbeat_timer;
+    DFHack::API m_DF;
+    DFHack::memory_info m_mem;
+    uint m_numBuildings;
+    vector<string> m_buildingtypes;
 
-	private slots:
-		void heartbeat();
+private slots:
+	void heartbeat();
 
 signals:
 	// methods for sending progress information to QWidgets

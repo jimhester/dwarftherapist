@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>358</width>
-    <height>391</height>
+    <width>360</width>
+    <height>533</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -165,62 +165,107 @@
       </layout>
      </item>
      <item>
-      <widget class="QLabel" name="lbl_profession">
-       <property name="palette">
-        <palette>
-         <active>
-          <colorrole role="WindowText">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>98</red>
-             <green>98</green>
-             <blue>98</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </active>
-         <inactive>
-          <colorrole role="WindowText">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>98</red>
-             <green>98</green>
-             <blue>98</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </inactive>
-         <disabled>
-          <colorrole role="WindowText">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>120</red>
-             <green>120</green>
-             <blue>120</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </disabled>
-        </palette>
-       </property>
-       <property name="font">
-        <font>
-         <family>Segoe UI</family>
-         <pointsize>12</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>LabelCrafter</string>
-       </property>
-       <property name="margin">
-        <number>0</number>
-       </property>
-       <property name="indent">
-        <number>0</number>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLabel" name="lbl_profession">
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>98</red>
+               <green>98</green>
+               <blue>98</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>98</red>
+               <green>98</green>
+               <blue>98</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>120</red>
+               <green>120</green>
+               <blue>120</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
+         <property name="font">
+          <font>
+           <family>Segoe UI</family>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>LabelCrafter</string>
+         </property>
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <property name="indent">
+          <number>0</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QCheckBox" name="checkBox">
+           <property name="text">
+            <string>Follow Dwarf</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_location">
+           <property name="maximumSize">
+            <size>
+             <width>166</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Zoom To
+Dwarf</string>
+           </property>
+           <property name="shortcut">
+            <string>Z</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
@@ -390,5 +435,42 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>btn_location</sender>
+   <signal>clicked()</signal>
+   <receiver>DwarfDetailsWidget</receiver>
+   <slot>move_dwarf()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>291</x>
+     <y>214</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>256</x>
+     <y>2</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>DwarfDetailsWidget</receiver>
+   <slot>set_refresh()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>310</x>
+     <y>193</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>300</x>
+     <y>2</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>move_dwarf()</slot>
+  <slot>set_refresh()</slot>
+ </slots>
 </ui>

@@ -60,6 +60,9 @@
         <property name="text">
          <string>Filter Dwarves</string>
         </property>
+        <property name="buddy">
+         <cstring>le_filter_text</cstring>
+        </property>
        </widget>
       </item>
       <item>
@@ -89,6 +92,9 @@
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Run Filter Script</string>
+        </property>
+        <property name="buddy">
+         <cstring>cb_filter_script</cstring>
         </property>
        </widget>
       </item>
@@ -253,6 +259,7 @@
    </attribute>
    <addaction name="act_connect_to_DF"/>
    <addaction name="act_read_dwarves"/>
+   <addaction name="act_refresh_Dwarves"/>
    <addaction name="separator"/>
    <addaction name="act_expand_all"/>
    <addaction name="act_collapse_all"/>
@@ -262,7 +269,6 @@
    <addaction name="separator"/>
    <addaction name="act_options"/>
    <addaction name="act_exit"/>
-   <addaction name="act_scan_memory"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dock_pending_jobs_list">
@@ -422,6 +428,9 @@
    <property name="shortcut">
     <string>Ctrl+C</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::TextHeuristicRole</enum>
+   </property>
   </action>
   <action name="act_exit">
    <property name="icon">
@@ -466,24 +475,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
-   </property>
-  </action>
-  <action name="act_scan_memory">
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/drive_magnify.png</normaloff>:/img/drive_magnify.png</iconset>
-   </property>
-   <property name="text">
-    <string>Scan Memory</string>
-   </property>
-   <property name="toolTip">
-    <string>Map out the RAM of Dwarf Fortress looking for known values</string>
-   </property>
-   <property name="statusTip">
-    <string>Map out the RAM of Dwarf Fortress looking for known values</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+M</string>
    </property>
   </action>
   <action name="act_expand_all">
@@ -735,6 +726,29 @@
     <string>Add New Filter Script...</string>
    </property>
   </action>
+  <action name="act_refresh_Dwarves">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/arrow_refresh.png</normaloff>
+     <normalon>:/img/stop.png</normalon>
+     <activeon>:/img/stop.png</activeon>:/img/arrow_refresh.png</iconset>
+   </property>
+   <property name="text">
+    <string>Refresh Dwarves</string>
+   </property>
+   <property name="toolTip">
+    <string>Refresh Dwarves Every Second</string>
+   </property>
+   <property name="statusTip">
+    <string notr="true"/>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+R</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
@@ -798,22 +812,6 @@
     <hint type="destinationlabel">
      <x>399</x>
      <y>314</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>act_scan_memory</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>scan_memory()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>205</x>
-     <y>230</y>
     </hint>
    </hints>
   </connection>
@@ -1089,6 +1087,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_refresh_Dwarves</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>set_refresh()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1112,5 +1126,6 @@
   <slot>export_gridviews()</slot>
   <slot>import_gridviews()</slot>
   <slot>add_new_filter_script()</slot>
+  <slot>set_refresh()</slot>
  </slots>
 </ui>
