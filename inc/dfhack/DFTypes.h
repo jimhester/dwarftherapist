@@ -25,6 +25,7 @@ distribution.
 #ifndef TYPES_H_INCLUDED
 #define TYPES_H_INCLUDED
 
+#include "Tranquility.h"
 #include "Export.h"
 
 namespace DFHack
@@ -58,6 +59,14 @@ struct t_vein
     int16_t assignment[16];
     int16_t unknown;
     uint32_t flags;
+    uint32_t address_of; // this is NOT part of the DF vein, but an address of the vein as seen by DFhack.
+};
+
+// stores what tiles should appear when the ice melts
+struct t_frozenliquidvein
+{
+    uint32_t vtable;
+    int16_t tiles[16][16];
 };
 
 struct t_matglossPair
@@ -537,7 +546,6 @@ struct t_creature
     int32_t squad_leader_id;
     uint8_t sex;
 };
-
 //raw
 struct t_item_df40d
 {
@@ -545,11 +553,60 @@ struct t_item_df40d
     uint16_t x;
     uint16_t y;
     uint16_t z;
-    uint32_t unk1;
     uint32_t flags;
+    uint32_t unk1;
     uint32_t unk2;
     uint32_t ID;
     // not complete
+};
+//From http://dwarffortresswiki.net/index.php/User:Rick/Memory_research
+//They all seem to be valid on 40d as well
+union t_itemflags
+{
+    uint32_t whole;
+    struct {
+        unsigned int on_ground : 1; // Item on ground
+        unsigned int in_job : 1; // item currently being used in a job
+        unsigned int in_inventory : 1; // Item in a creatures inventory
+        unsigned int u_ngrd1 : 1; // only occurs when not on ground, unknown function
+        
+        unsigned int in_workshop : 1; // Item is in a workshops inventory
+        unsigned int u_ngrd2 : 1; // only occurs when not on ground, unknown function
+        unsigned int u_ngrd3 : 1; // only occurs when not on ground, unknown function
+        unsigned int rotten : 1; // Item is rotten
+        
+        unsigned int unk1 : 1; // unknown function
+        unsigned int u_ngrd4 : 1; // only occurs when not on ground, unknown function
+        unsigned int unk2 : 1; // unknown function
+        unsigned int u_ngrd5 : 1; // only occurs when not on ground, unknown function
+
+        unsigned int unk3 : 1; // unknown function
+        unsigned int u_ngrd6 : 1; // only occurs when not on ground, unknown function
+        unsigned int narrow : 1; // Item is narrow
+        unsigned int u_ngrd7 : 1; // only occurs when not on ground, unknown function
+                
+        unsigned int worn : 1; // item shows wear
+        unsigned int unk4 : 1; // unknown function
+        unsigned int u_ngrd8 : 1; // only occurs when not on ground, unknown function
+        unsigned int forbid : 1; // designate forbid item
+        
+        unsigned int unk5 : 1; // unknown function
+        unsigned int dump : 1; // designate dump item
+        unsigned int on_fire: 1; //indicates if item is on fire, Will Set Item On Fire if Set!
+        unsigned int melt : 1; // designate melt item, if item cannot be melted, does nothing it seems
+        
+        // 0100 0000 - 8000 0000
+        unsigned int hidden : 1; // designate hide item
+        unsigned int u_ngrd9 : 1; // only occurs when not on ground, unknown function
+        unsigned int unk6 : 1; // unknown function
+        unsigned int unk7 : 1; // unknown function
+        
+        unsigned int unk8 : 1; // unknown function
+        unsigned int unk9 : 1; // unknown function
+        unsigned int unk10 : 1; // unknown function
+        unsigned int unk11 : 1; // unknown function
+        
+    } bits;
 };
 
 //cooked
@@ -562,7 +619,7 @@ struct t_item
     uint32_t y;
     uint32_t z;
     
-    uint32_t flags;
+    t_itemflags flags;
     uint32_t ID;
     uint32_t type;
     t_matglossPair material;
@@ -581,7 +638,27 @@ struct t_itemType
     char name[128];
 };
 
-// TODO: research this further? consult DF hacker wizards?
+
+enum e_traffic
+{
+    traffic_normal,
+    traffic_low,
+    traffic_high,
+    traffic_restricted
+};
+
+enum e_designation
+{
+    designation_no,
+    designation_default, // dig walls, remove stairs and ramps, gather plants, fell trees
+    designation_ud_stair, // dig up/down stairs
+    designation_channel, // dig a channel
+    designation_ramp, // dig ramp out of a wall
+    designation_d_stair, // dig a stair down
+    designation_u_stair, // dig a stair up
+    designation_7 // whatever
+};
+
 union t_designation
 {
     uint32_t whole;
@@ -591,10 +668,9 @@ union t_designation
 /*
  * All the different dig designations... needs more info, probably an enum
  */
-    unsigned int dig : 3;
-    unsigned int detail : 1;///<- wtf
-    unsigned int detail_event : 1;///<- more wtf
-    unsigned int hidden :1;
+    e_designation dig : 3;
+    unsigned int smooth : 2;
+    unsigned int hidden : 1;
 
 /*
  * This one is rather involved, but necessary to retrieve the base layer matgloss index
@@ -617,8 +693,8 @@ union t_designation
     unsigned int liquid_type : 1;
     unsigned int water_table : 1; // srsly. wtf?
     unsigned int rained : 1; // does this mean actual rain (as in the blue blocks) or a wet tile?
-    unsigned int traffic : 2; // needs enum
-    unsigned int flow_forbid : 1; // idk wtf bbq
+    e_traffic traffic : 2; // needs enum
+    unsigned int flow_forbid : 1; // what?
     unsigned int liquid_static : 1;
     unsigned int moss : 1;// I LOVE MOSS
     unsigned int feature_present : 1; // another wtf... is this required for magma pipes to work?
@@ -639,10 +715,7 @@ union t_occupancy
     // splatter. everyone loves splatter.
     unsigned int mud : 1;
     unsigned int vomit :1;
-    unsigned int debris1 :1;
-    unsigned int debris2 :1;
-    unsigned int debris3 :1;
-    unsigned int debris4 :1;
+    unsigned int broken_arrows_color :4;
     unsigned int blood_g : 1;
     unsigned int blood_g2 : 1;
     unsigned int blood_b : 1;
@@ -661,7 +734,7 @@ union t_occupancy
     unsigned int slime2 : 1;
     unsigned int blood : 1;
     unsigned int blood2 : 1;
-    unsigned int debris5 : 1;
+    unsigned int broken_arrows_variant : 1;
     unsigned int snow : 1;
     } bits;
     struct {
@@ -679,6 +752,40 @@ struct t_viewscreen
 {
     int32_t type;
     //There is more info in these objects, but I don't know what it is yet
+};
+
+struct t_note
+{
+    char symbol;
+    uint16_t foreground;
+    uint16_t background;
+    char name[128];
+    uint16_t x;
+    uint16_t y;
+    uint16_t z;
+};
+
+#define NUM_HOTKEYS 16
+struct t_hotkey
+{
+    char name[10];
+    int16_t mode;
+    int32_t x;
+    int32_t y;
+    int32_t z;
+};
+
+// local are numbered with top left as 0,0, name is indexes into the item vector
+struct t_settlement
+{
+	uint32_t origin;
+	int32_t name[2];
+	int16_t world_x;
+	int16_t world_y;
+	int16_t local_x1;
+	int16_t local_x2;
+	int16_t local_y1;
+	int16_t local_y2;
 };
 
 }// namespace DFHack

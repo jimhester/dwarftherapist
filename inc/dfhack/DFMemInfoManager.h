@@ -25,6 +25,8 @@ distribution.
 #ifndef MEMINFO_MANAGER_H_INCLUDED
 #define MEMINFO_MANAGER_H_INCLUDED
 
+#include <Tranquility.h>
+
 namespace DFHack
 {
     class MemInfoManager
@@ -36,9 +38,9 @@ namespace DFHack
             bool loadFile( string path_to_xml);
             bool isInErrorState() const {return error;};
         private:
-            std::vector<memory_info> meminfo;
-            void ParseVTable(TiXmlElement* vtable, memory_info& mem);
-            void ParseEntry (TiXmlElement* entry, memory_info& mem, map <string ,TiXmlElement *>& knownEntries);
+            std::vector<memory_info*> meminfo;
+            void ParseVTable(TiXmlElement* vtable, memory_info* mem);
+            void ParseEntry (TiXmlElement* entry, memory_info* mem, map <string ,TiXmlElement *>& knownEntries);
             bool error;
     };
 }

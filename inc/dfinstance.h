@@ -47,7 +47,7 @@ public:
 	// accessors
 
     DFHack::API * getAPI(){return &m_DF;}
-    DFHack::memory_info * getMem(){return &m_mem;}
+    DFHack::memory_info * getMem(){return m_mem;}
     QString getCreatureType(uint type);
     QString getBuildingType(uint type);
     QString getStoneType(uint type);
@@ -69,6 +69,7 @@ public:
 	QVector<Dwarf*> load_dwarves();
 
 private:
+	bool m_has_shm;
     bool m_is_ok;
     CP437Codec *m_codec;
     vector<t_matgloss> m_creaturestypes;
@@ -83,7 +84,7 @@ private:
     int m_attach_count;
     QTimer *m_heartbeat_timer;
     DFHack::API m_DF;
-    DFHack::memory_info m_mem;
+    DFHack::memory_info* m_mem;
     uint m_numBuildings;
     vector<string> m_buildingtypes;
 

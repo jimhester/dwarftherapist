@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "dwarftherapist.h"
 #include "memorysegment.h"
+#include "dfhack/DFProcess.h"
 
 
 DFInstance::DFInstance(QObject* parent)
@@ -49,13 +50,21 @@ DFInstance::DFInstance(QObject* parent)
         m_is_ok = false;
     }
     else{
+		// test if connected with shm
+		DFHack::SHMProcess* test = dynamic_cast<DFHack::SHMProcess*>(m_DF.getProcess());
+		if(test != NULL){
+			m_has_shm = true;
+		}
+		else{
+			m_has_shm = false;
+		}
     m_mem = m_DF.getMemoryInfo();
     m_DF.InitViewAndCursor();
     m_DF.InitViewSize();
     m_DF.InitMap(); // for getSize();
     
-    m_numBuildings = m_DF.InitReadBuildings(m_buildingtypes);
-    m_numCreatures = m_DF.InitReadCreatures();
+//    m_numBuildings = m_DF.InitReadBuildings(m_buildingtypes);
+    m_DF.InitReadCreatures(m_numCreatures);
     m_DF.ReadCreatureMatgloss(m_creaturestypes);
     m_DF.ReadWoodMatgloss(m_woodstypes);
     m_DF.ReadPlantMatgloss(m_plantstypes);
@@ -137,7 +146,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 void DFInstance::heartbeat() {
 	// simple read attempt that will fail if the DF game isn't running a fort, or isn't running at all
   m_DF.Suspend();
-    uint32_t creaturesSize = m_DF.InitReadCreatures();
+    uint32_t creaturesSize;
+    m_DF.InitReadCreatures(creaturesSize);
     m_DF.Resume();
     //QVector<uint> creatures = enumerate_vector(m_layout->address("creature_vector") + m_memory_correction);
 	if (creaturesSize < 1) {

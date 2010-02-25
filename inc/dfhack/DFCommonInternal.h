@@ -25,6 +25,8 @@ distribution.
 #ifndef DFCOMMONINTERNAL_H_INCLUDED
 #define DFCOMMONINTERNAL_H_INCLUDED
 
+#include <Tranquility.h>
+
 #include <string>
 #include <vector>
 #include <map>
@@ -35,22 +37,6 @@ using namespace std;
 #include "integers.h"
 #include <assert.h>
 #include <string.h>
-
-/*
-#ifdef __KDE_HAVE_GCC_VISIBILITY
-#define NO_EXPORT __attribute__ ((visibility("hidden")))
-#define EXPORT __attribute__ ((visibility("default")))
-#define IMPORT __attribute__ ((visibility("default")))
-#elif defined(_WIN32) || defined(_WIN64)
-#define NO_EXPORT
-#define EXPORT __declspec(dllexport)
-#define IMPORT __declspec(dllimport)
-#else
-#define NO_EXPORT
-#define EXPORT
-#define IMPORT
-#endif
-*/
 
 #ifdef LINUX_BUILD
     #include <sys/types.h>
@@ -86,19 +72,17 @@ namespace DFHack
     * Currently attached process and its handle
     */
     extern Process * g_pProcess; ///< current process. non-NULL when picked
-    extern ProcessHandle g_ProcessHandle; ///< cache of handle to current process. used for speed reasons
-    extern int g_ProcessMemFile; ///< opened /proc/PID/mem, valid when attached
 }
 #ifndef BUILD_DFHACK_LIB
 #   define BUILD_DFHACK_LIB
 #endif
 
 #include "DFTypes.h"
-#include "DFDataModel.h"
+//#include "DFDataModel.h"
 #include "DFProcess.h"
+#include "DFWindow.h"
 #include "DFProcessEnumerator.h"
 #include "DFMemInfoManager.h"
-#include "DFMemAccess.h"
 #include "DFVector.h"
 #include "DFMemInfo.h"
 #include <stdlib.h>
@@ -117,7 +101,6 @@ namespace DFHack
 #else
 #define MEMXML_DATA_PATH .
 #endif
-
 
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #define fill_char_buf(buf, str) strcpy_s((buf), sizeof(buf) / sizeof((buf)[0]), (str).c_str())

@@ -25,6 +25,7 @@ distribution.
 #ifndef PROCESSMANAGER_H_INCLUDED
 #define PROCESSMANAGER_H_INCLUDED
 
+#include <Tranquility.h>
 #include "Export.h"
 
 class TiXmlElement;
@@ -32,7 +33,6 @@ class TiXmlElement;
 namespace DFHack
 {
     class memory_info;
-    class DataModel;
     class Process;
     
     /*
@@ -48,6 +48,7 @@ namespace DFHack
         bool findProcessess();
         uint32_t size();
         Process * operator[](uint32_t index);
+        void purge(void);
     };
 }
 #endif // PROCESSMANAGER_H_INCLUDED

@@ -38,6 +38,8 @@ THE SOFTWARE.
 #include "militarypreference.h"
 #include "utils.h"
 #include "cp437codec.h"
+#include "dfhack/DFMemInfo.h"
+#include "dfhack/DFProcess.h"
 
 Dwarf::Dwarf(DFInstance *df, const uint &index, QObject *parent)
 	: QObject(parent)
@@ -512,7 +514,7 @@ bool Dwarf::commit_pending() {
 		// change values to what's pending
 		buf[labor_id] = m_pending_labors.value(labor_id);
 	}
-	m_df->getAPI()->Suspend();
+//	m_df->getAPI()->Suspend();
     m_df->getAPI()->WriteLabors(m_index,buf);
     bool success = true;
 	if (m_pending_nick_name != m_nick_name)
@@ -523,215 +525,16 @@ bool Dwarf::commit_pending() {
     return success;
 }
 
-bool Dwarf::waitTillChanged(string changeValue, bool isName)
-{
-    m_df->getAPI()->Suspend();
-    DFHack::t_creature testCre;
-    m_df->getAPI()->ReadCreature(m_index,testCre);
-    int tryCount = 0;
-    if(isName)
-    {
-        while(testCre.nick_name != changeValue && tryCount <50)
-        {
-            m_df->getAPI()->TypeSpecial(DFHack::WAIT,1,100);
-            m_df->getAPI()->Suspend();
-            m_df->getAPI()->ReadCreature(m_index,testCre);
-            tryCount++;
-        }
-    }
-    else
-    {
-        while(testCre.custom_profession != changeValue && tryCount < 50)
-        {
-            m_df->getAPI()->TypeSpecial(DFHack::WAIT,1,100);
-            m_df->getAPI()->Suspend();
-            m_df->getAPI()->ReadCreature(m_index,testCre);
-            tryCount++;
-        }
-    }
-    if(tryCount >= 50){
-        return false;
-    }
-    return true;
-}
-bool Dwarf::waitTillScreenState(string screenState,bool EqualTo)
-{
-    DFHack::t_viewscreen current;
-    m_df->getAPI()->Suspend();
-    m_df->getAPI()->ReadViewScreen(current);
-    int tryCount = 0;
-    while(((EqualTo && m_df->getBuildingType(current.type) != QString(screenState.c_str())) || (!EqualTo && m_df->getBuildingType(current.type) == QString(screenState.c_str()))) && tryCount < 50)
-    {
-        m_df->getAPI()->TypeSpecial(DFHack::WAIT,1,100);
-        m_df->getAPI()->Suspend();
-        m_df->getAPI()->ReadViewScreen(current);
-        tryCount++;
-    }
-    if(tryCount >= 50){
-        return false;
-    }
-    return true;
-}
+bool Dwarf::write_string(const QString &changeString,bool isName){ // if not name, has to be profession
 
-bool Dwarf::waitTillCursorState(bool On)
-{
-    int32_t x,y,z;
-    int tryCount = 0;
-    m_df->getAPI()->Suspend();
-    bool cursorResult = m_df->getAPI()->getCursorCoords(x,y,z);
-    while(tryCount < 50 && On && !cursorResult || !On && cursorResult)
-    {
-        m_df->getAPI()->TypeSpecial(DFHack::WAIT,1,100);
-        tryCount++;
-        m_df->getAPI()->Suspend();
-        cursorResult = m_df->getAPI()->getCursorCoords(x,y,z);
-    }
-    if(tryCount >= 50)
-    {
-        return false;
-    }
-    return true;
-}
-
-bool Dwarf::waitTillMenuState(uint32_t menuState,bool EqualTo)
-{
-    int tryCount = 0;
-    m_df->getAPI()->Suspend();
-    uint32_t testState = m_df->getAPI()->ReadMenuState();
-    while(tryCount < 50 && ((EqualTo && menuState != testState) || (!EqualTo && menuState == testState)))
-    {
-        m_df->getAPI()->TypeSpecial(DFHack::WAIT,1,100);
-        tryCount++;
-        m_df->getAPI()->Suspend();
-        testState = m_df->getAPI()->ReadMenuState();
-    }
-    if(tryCount >= 50)
-    {
-    //    cerr << "Something went wrong, menuState: "<<testState << endl;
-        return false;
-    }
-    return true;
-}
-bool Dwarf::moveToBaseWindow()
-{
-    DFHack::t_viewscreen current;
-    m_df->getAPI()->ReadViewScreen(current);
-    while(m_df->getBuildingType(current.type) != QString("viewscreen_dwarfmode")){
-        m_df->getAPI()->TypeSpecial(DFHack::F9); // cancel out of text input in names
-//        m_df->getAPI()->TypeSpecial(DFHack::ENTER); // cancel out of text input in hotkeys
-        m_df->getAPI()->TypeSpecial(DFHack::SPACE); // should move up a level
-        if(!waitTillScreenState(m_df->getBuildingType(current.type).toStdString(),false)) return false; // wait until screen changes from current
-        m_df->getAPI()->ReadViewScreen(current);
-    }
-    if(m_df->getAPI()->ReadMenuState() != 0){// if menu state != 0 then there is a menu, so escape it
-        m_df->getAPI()->TypeSpecial(DFHack::F9);m_df->getAPI()->TypeSpecial(DFHack::ENTER); // exit out of any text prompts
-        m_df->getAPI()->TypeSpecial(DFHack::SPACE); // go back to base state
-        if(!waitTillMenuState(0))return false;
-    }
-    return true;
-}
-
-bool Dwarf::setCursorToCreature()
-{
-    int32_t x,y,z;
-    m_df->getAPI()->Suspend();
-    m_df->getAPI()->getCursorCoords(x,y,z);
-    if(x == -30000){
-        m_df->getAPI()->TypeStr("v");
-        if(!waitTillCursorState(true)) return false;
-    }
-    else{ // reset the cursor to be the creature cursor
-        m_df->getAPI()->TypeSpecial(DFHack::SPACE);
-        if(!waitTillCursorState(false)) return false;
-        m_df->getAPI()->TypeStr("v");
-        if(!waitTillCursorState(true)) return false;
-    }
-    return true;
-}
-
-bool Dwarf::write_string(const QString &changeString,bool isName) // if not name, has to be profession
-{
-    int eraseAmount;
-    QString commandString;
+    DFHack::Process* p = m_df->getAPI()->getProcess();
+    DFHack::memory_info* mem = m_df->getMem();
     if(isName){
-        commandString = "pzyn";
-        eraseAmount = strlen(m_cre.nick_name);
+        p->writeSTLString(m_cre.origin+mem->getOffset("creature_nick_name"),changeString.toStdString());
+        return(true);
     }
-    else{
-        commandString = "pzyp";
-        eraseAmount = strlen(m_cre.custom_profession);
-    }
-    start:
-    bool completed = false;
-    if(moveToBaseWindow() && setCursorToCreature())
-    {
-        m_df->getAPI()->Suspend();
-        m_df->getAPI()->setCursorCoords(m_cre.x, m_cre.y,m_cre.z);
-        vector<uint32_t> underCursor;
-        while(!m_df->getAPI()->getCurrentCursorCreatures(underCursor))
-        {
-            m_df->getAPI()->TypeSpecial(DFHack::WAIT,1,100);
-            m_df->getAPI()->Suspend();
-            m_df->getAPI()->setCursorCoords(m_cre.x, m_cre.y,m_cre.z);
-            DFHack::t_creature tempD;
-            m_df->getAPI()->ReadCreature(m_index,tempD);
-            m_cre.x = tempD.x; // update creature location
-            m_cre.y = tempD.y;
-            m_cre.z = tempD.z;
-        }
-        //CurrentCursorCreatures gives the creatures in the order that you see them with the 'k' cursor.  
-        //The 'v' cursor displays them in the order of last, then first,second,third and so on
-        //Pretty weird, but it works
-        //The only place that seems to display which creature is currently selected is on the stack, whose location is likely not static, so not usable
-        if(underCursor[underCursor.size()-1] != m_cre.origin)
-        {
-            for(uint i = 0;i<underCursor.size()-1;i++)
-            {
-                m_df->getAPI()->TypeStr("v",100);
-                if(underCursor[i] == m_cre.origin)
-                {
-                    break;
-                }
-            }
-        }
-        m_df->getAPI()->Resume();
-        m_df->getAPI()->TypeStr(commandString.toStdString().c_str());
-        if(waitTillScreenState("viewscreen_customize_unit"))
-        {
-            m_df->getAPI()->TypeSpecial(DFHack::BACK_SPACE,eraseAmount);
-            if(waitTillChanged("",isName))
-            {
-                m_df->getAPI()->TypeStr(changeString.toStdString().c_str());
-                if(waitTillChanged(changeString.toStdString().c_str(),isName))
-                {
-                    m_df->getAPI()->TypeSpecial(DFHack::ENTER);
-                    m_df->getAPI()->TypeSpecial(DFHack::SPACE); // should take you to unit screen if everything worked
-                    if(waitTillScreenState("viewscreen_unit"))
-                    {
-                        m_df->getAPI()->TypeSpecial(DFHack::SPACE);
-                        if(waitTillScreenState("viewscreen_dwarfmode"))
-                        {
-                            m_df->getAPI()->TypeSpecial(DFHack::SPACE);
-                            if(waitTillCursorState(false))
-                            {
-                                completed = true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    if(!completed)
-    {
-        goto start; // HACK goto is very ugly, but I don't want to reorganize things to do it properly
-        /*QMessageBox::warning(0, tr("Warning"),
-		tr("Somthing went wrong when trying to set %1,please set DF to it's original state and try again").arg(changeString));
-        string line;*/
-        m_df->getAPI()->Resume();
-        return false;
-    }
-    return true;
+    p->writeSTLString(m_cre.origin+mem->getOffset("creature_custom_profession"),changeString.toStdString());
+    return(true);
 }
 
 void Dwarf::set_custom_profession_text(const QString &prof_text) {
