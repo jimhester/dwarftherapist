@@ -30,6 +30,7 @@ using namespace std;
 #include "dfhack/integers.h"
 #include "dfhack/DFTypes.h"
 #include "dfhack/DFHackAPI.h"
+#include "dfinstance.h"
 using namespace DFHack;
 
 class DFInstance;
@@ -261,13 +262,14 @@ public:
     /* CustomName and Profession Changing                                   */
     /************************************************************************/
 
-    bool waitTillChanged(string changeValue, bool isName);
+/*    bool waitTillChanged(string changeValue, bool isName);
     bool waitTillScreenState(string screenState,bool EqualTo=true);
     bool waitTillCursorState(bool On);
     bool waitTillMenuState(uint32_t menuState,bool EqualTo=true);
     bool moveToBaseWindow();
-    bool setCursorToCreature();
+    bool setCursorToCreature();*/
 
+	bool can_write_string(){ return m_df->has_shm();}
     bool write_string(const QString &text,bool isName); // if not name, has to be profession
 
     public slots:
@@ -284,7 +286,7 @@ public:
 
 private:
     t_creature m_cre;
-    DFInstance *m_df;
+	DFInstance *m_df;
     uint m_index;
     uint m_address;
     int m_race_id;

@@ -62,6 +62,7 @@ public:
     QString convertString(const QString &);
 
 	bool is_ok(){return m_is_ok;}
+	bool has_shm(){return m_has_shm;}
 	
     QString translateName(const t_lastname &,string trans);
     QString translateName(const t_squadname &, string trans);

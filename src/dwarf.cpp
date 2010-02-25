@@ -542,18 +542,13 @@ void Dwarf::set_custom_profession_text(const QString &prof_text) {
 }
 
 int Dwarf::apply_custom_profession(CustomProfession *cp) {
-  //  vector<int> m_laborIDs = m_labors.uniqueKeys().toVector().toStdVector();
-  //  vector<int> m_pendingIDs = m_pending_labors.uniqueKeys().toVector().toStdVector();
 	foreach(int labor_id, m_pending_labors.uniqueKeys()) {
 		set_labor(labor_id, false); // turn off everything...
 	}
- //   vector<int> labors234 = cp->get_enabled_labors().toStdVector();
 
 	foreach(int labor_id, cp->get_enabled_labors()) {
 		set_labor(labor_id, true); // only turn on what this prof has enabled...
 	}
-   // vector<int> m_laborIDs2 = m_labors.uniqueKeys().toVector().toStdVector();
-   // vector<int> m_pendingIDs2 = m_pending_labors.uniqueKeys().toVector().toStdVector();
 	m_pending_custom_profession = cp->get_name();
 	return get_dirty_labors().size();
 }

@@ -11,6 +11,7 @@ INCLUDEPATH += ./thirdparty/qtcolorpicker-2.6 \
     ./inc/models \
     ./inc/grid_view \
     ./inc/docks \
+    ./inc/dfhack \
     ./ui
 
 # Include file(s)

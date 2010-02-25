@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="DwarfTherapist"
 	ProjectGUID="{0C802433-B930-3326-8C19-034523F04565}"
 	RootNamespace="DwarfTherapist"
 	Keyword="Qt4VSv1.0"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -45,7 +46,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP -Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
 				Optimization="4"
-				AdditionalIncludeDirectories="&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtNetwork&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;$(QTDIR)\include&quot;;.\inc;.\inc\models;.\inc\docks;.\inc\grid_view;&quot;$(IntDir)&quot;;.\ui;&quot;$(QTDIR)\mkspecs\win32-msvc2008&quot;;.;&quot;$(QTDIR)\include\ActiveQt&quot;;.\tmp;&quot;.\thirdparty\libqxt-0.5.0&quot;;&quot;.\thirdparty\qtcolorpicker-2.6&quot;;$(QTDIR)\include\QtHelp;$(QTDIR)\include\QtScript"
+				AdditionalIncludeDirectories=".\inc\dfhack;&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtNetwork&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;$(QTDIR)\include&quot;;.\inc;.\inc\models;.\inc\docks;.\inc\grid_view;&quot;$(IntDir)&quot;;.\ui;&quot;$(QTDIR)\mkspecs\win32-msvc2008&quot;;.;&quot;$(QTDIR)\include\ActiveQt&quot;;.\tmp;&quot;.\thirdparty\libqxt-0.5.0&quot;;&quot;.\thirdparty\qtcolorpicker-2.6&quot;;&quot;$(QTDIR)\include\QtHelp&quot;;&quot;$(QTDIR)\include\QtScript&quot;"
 				PreprocessorDefinitions="_WINDOWS;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;QT_DLL;QT_NETWORK_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;QT_SCRIPT_LIB;BUILD_QXT_CORE"
 				GeneratePreprocessedFile="0"
 				ExceptionHandling="1"
@@ -82,6 +83,8 @@
 				ProgramDatabaseFile=""
 				SubSystem="2"
 				LinkTimeCodeGeneration="0"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -101,9 +104,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -143,7 +143,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtNetwork&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;$(QTDIR)\include&quot;;.\inc;.\inc\models;.\inc\docks;.\inc\grid_view;&quot;$(IntDir)&quot;;.\ui;&quot;$(QTDIR)\mkspecs\win32-msvc2008&quot;;.;&quot;$(QTDIR)\include\ActiveQt&quot;;.\tmp;&quot;.\thirdparty\libqxt-0.5.0&quot;;&quot;.\thirdparty\qtcolorpicker-2.6&quot;;$(QTDIR)\include\QtHelp;$(QTDIR)\include\QtScript"
+				AdditionalIncludeDirectories="&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtNetwork&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;$(QTDIR)\include&quot;;.\inc\dfhack;.\inc;.\inc\models;.\inc\docks;.\inc\grid_view;&quot;$(IntDir)&quot;;.\ui;&quot;$(QTDIR)\mkspecs\win32-msvc2008&quot;;.;&quot;$(QTDIR)\include\ActiveQt&quot;;.\tmp;&quot;.\thirdparty\libqxt-0.5.0&quot;;&quot;.\thirdparty\qtcolorpicker-2.6&quot;;&quot;$(QTDIR)\include\QtHelp&quot;;&quot;$(QTDIR)\include\QtScript&quot;"
 				PreprocessorDefinitions="QT_NO_DEBUG;NDEBUG;_WINDOWS;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;QT_DLL;QT_NETWORK_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;QT_SCRIPT_LIB;BUILD_QXT_CORE"
 				GeneratePreprocessedFile="0"
 				MinimalRebuild="false"
@@ -178,11 +178,13 @@
 				OutputFile="bin\release\DwarfTherapist.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;$(QTDIR)\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(QTDIR)\lib&quot; "
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="false"
 				SubSystem="2"
 				LinkTimeCodeGeneration="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 				Profile="false"
 			/>
@@ -203,9 +205,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"

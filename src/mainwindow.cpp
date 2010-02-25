@@ -239,7 +239,7 @@ void MainWindow::connect_to_df() {
 	m_df = new DFInstanceLinux();
 #endif*/
     m_df = new DFInstance();
-    if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
+    if (m_df && m_df->is_ok() && m_df->find_running_copy()) {
 //		m_scanner = new Scanner(m_df, this);
        // LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
     //    DT->load_game_translation_tables(m_df);

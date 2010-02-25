@@ -50,12 +50,14 @@ DFInstance::DFInstance(QObject* parent)
         m_is_ok = false;
     }
     else{
+        m_is_ok = true;
 		// test if connected with shm
 		DFHack::SHMProcess* test = dynamic_cast<DFHack::SHMProcess*>(m_DF.getProcess());
 		if(test != NULL){
 			m_has_shm = true;
 		}
 		else{
+			QMessageBox::warning(0, tr("Warning"), tr("SDL.dll not installed properly\ncustom name and profession writing disabled\nTo enable please rename the original SDL.dll to SDLreal.dll and copy the DFhack SDL.dll into your Dwarf Fortress directory"));
 			m_has_shm = false;
 		}
     m_mem = m_DF.getMemoryInfo();
@@ -88,7 +90,6 @@ bool DFInstance::find_running_copy() {
     if (DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()) {
 	    m_heartbeat_timer->start(1000); // check every second for disconnection
     }
-    m_is_ok = true;
 	return m_is_ok;
 }
 
@@ -256,8 +257,9 @@ QString DFInstance::getItemType(uint type,uint index)
 }
 DFInstance::~DFInstance(){
     if(m_is_ok){
+		m_DF.FinishReadItems();
         m_DF.FinishReadCreatures();
         m_DF.FinishReadNameTables();
-        m_DF.Detach();
+ //       m_DF.Detach();
     }
 }

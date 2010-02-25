@@ -163,15 +163,19 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 		Dwarf *d = m_model->get_dwarf_by_id(id);
 		m.addActions(d->get_actions());
 		m.addSeparator();
-		m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
-		m.addSeparator();
+		if( d->can_write_string() ){
+			m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
+			m.addSeparator();
+		}
 
 		QMenu sub(&m);
 		sub.setTitle(tr("Custom Professions"));
-        QAction *a = sub.addAction(tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));
-        a->setData(id);
-		a = sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
-		a->setData(id);
+		if( d->can_write_string() ){
+			QAction *a = sub.addAction(tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));
+			a->setData(id);
+			a = sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
+			a->setData(id);
+		}
 		sub.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
 		sub.addSeparator();
 
@@ -220,10 +224,10 @@ void StateTableView::set_nickname() {
 	Dwarf *d = m_model->get_dwarf_by_id(id);
 	if (d) {
 		QString new_nick = QInputDialog::getText(this, tr("New Nickname"), tr("Nickname"), QLineEdit::Normal, d->nickname());
-		if (new_nick.length() > 39) {
-			QMessageBox::warning(this, tr("Nickname too long"), tr("Nicknames must be under 39 characters long."));
-			return;
-		}
+		//if (new_nick.length() > 39) {
+		//	QMessageBox::warning(this, tr("Nickname too long"), tr("Nicknames must be under 39 characters long."));
+		//	return;
+		//}
 		d->set_nickname(new_nick);
 		m_model->setData(first_col[0], d->nice_name(), Qt::DisplayRole);
 	}

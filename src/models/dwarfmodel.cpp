@@ -408,23 +408,23 @@ void DwarfModel::clear_pending() {
 void DwarfModel::commit_pending() {
     bool success = true;
 
-    QProgressDialog progress( "Committing changes, for best chance of success, don't touch anything!", "Abort Copy", 0,m_dwarves.size(),
-                          qobject_cast<QWidget *>(parent()) );
-    int count = 0;
-    progress.setValue(0);
+ //   QProgressDialog progress( "Committing changes, for best chance of success, don't touch anything!", "Abort Copy", 0,m_dwarves.size(),
+ //                         qobject_cast<QWidget *>(parent()) );
+//    int count = 0;
+ //   progress.setValue(0);
 	foreach(Dwarf *d, m_dwarves) {
         qApp->processEvents();
-        if(progress.wasCanceled())
-            break;
+ //       if(progress.wasCanceled())
+  //          break;
 		if (d->pending_changes()) {
-            progress.setValue(count);
+   //         progress.setValue(count);
             if(!d->commit_pending()){
                 success = false;
                 break;
             }
             
 		}
-        count++;
+    //    count++;
 	}
 	load_dwarves();
     emit new_pending_changes(0);

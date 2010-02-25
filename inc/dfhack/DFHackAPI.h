@@ -25,7 +25,7 @@ distribution.
 #ifndef SIMPLEAPI_H_INCLUDED
 #define SIMPLEAPI_H_INCLUDED
 
-#include "Tranquility.h"
+#include <Tranquility.h>
 
 #include "Export.h"
 #include <string>
@@ -231,10 +231,7 @@ namespace DFHack
         bool InitReadItems(uint32_t & numitems);
         bool ReadItem(const uint32_t &index, t_item & item);
         void FinishReadItems();
-        
-        // wrapper for meminfo method of the same name
-        bool getClassIDMapping (vector <string>& objecttypes);
-        
+
         memory_info *getMemoryInfo();
         Process * getProcess();
         DFWindow * getWindow();
