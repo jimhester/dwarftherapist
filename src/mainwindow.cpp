@@ -229,21 +229,9 @@ void MainWindow::connect_to_df() {
 	}
 	// find_running_copy can fail for several reasons, and will take care of 
 	// logging and notifying the user.
-/*#ifdef _WINDOWS
-	m_df = new DFInstanceWindows();
-#endif
-#ifdef _OSX
-	m_df = new DFInstanceOSX();
-#endif
-#ifdef _LINUX
-	m_df = new DFInstanceLinux();
-#endif*/
     m_df = new DFInstance();
     if (m_df && m_df->is_ok() && m_df->find_running_copy()) {
-//		m_scanner = new Scanner(m_df, this);
-       // LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
-    //    DT->load_game_translation_tables(m_df);
-    //    m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
+        this->setWindowTitle("Dwarf Therapist - " + m_df->getDwarfFortName() + ", \"" + m_df->getGenericFortName() + "\"");
         m_lbl_status->setText(tr("Connected to ") + QString(m_df->getMem()->getVersion().c_str()));
 		connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
 		set_interface_enabled(true);
@@ -271,8 +259,6 @@ void MainWindow::read_dwarves() {
         lost_df_connection();
 		return;
 	}
-  /*  ui->
-    children()*/
 
     QScrollBar * v_bar = m_view_manager->get_stv()->verticalScrollBar();
     QScrollBar * h_bar = m_view_manager->get_stv()->horizontalScrollBar();

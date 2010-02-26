@@ -58,6 +58,8 @@ public:
     QString getPlantDrinkType(uint type);
     QString getPlantFoodType(uint type);
     QString getPlantExtractType(uint type);
+    QString getGenericFortName(){return m_generic_fort_name;}
+    QString getDwarfFortName(){return m_dwarf_fort_name;}
     QString convertString(const char *);
     QString convertString(const QString &);
 
@@ -80,13 +82,16 @@ private:
     vector<t_matgloss> m_woodstypes;
     vector< vector<t_itemType> > m_itemstypes;
 
-    uint m_numCreatures;
     map<string, vector<string> > m_names;
     int m_attach_count;
     QTimer *m_heartbeat_timer;
     DFHack::API m_DF;
     DFHack::memory_info* m_mem;
-    uint m_numBuildings;
+    uint m_num_buildings;
+    uint m_num_creatures;
+    uint m_num_settlements;
+    QString m_dwarf_fort_name;
+    QString m_generic_fort_name;
     vector<string> m_buildingtypes;
 
 private slots:
