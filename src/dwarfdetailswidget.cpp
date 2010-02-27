@@ -44,6 +44,10 @@ void DwarfDetailsWidget::set_refresh(){
         m_refreshTimer->stop();
     }
 }
+void DwarfDetailsWidget::stop_refresh(){
+	m_refreshTimer->stop();
+	ui->checkBox->setCheckState(Qt::Unchecked);
+}
 void DwarfDetailsWidget::move_dwarf(){
     m_d->refresh_data();
     m_d->move_view_to();
@@ -55,8 +59,6 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->lbl_translated_name->setText(QString("(%1)").arg(d->translated_name()));
     ui->lbl_profession->setText(d->profession());
     ui->lbl_current_job->setText(QString("%1 %2").arg(d->current_job_id()).arg(d->current_job()));
-//    ui->lbl_location->setText(QString("%1 %2 %3").arg(d->x()).arg(d->y()).arg(d->z()));
-  //  ui->btn_location->setText("Goto Dwarf");
 
     QMap<QProgressBar*, int> things;
     int str = d->strength();

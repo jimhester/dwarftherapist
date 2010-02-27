@@ -74,6 +74,7 @@ public:
 private:
 	bool m_has_shm;
     bool m_is_ok;
+	bool m_creatures_inited;
     CP437Codec *m_codec;
     vector<t_matgloss> m_creaturestypes;
     vector<t_matglossPlant> m_plantstypes;

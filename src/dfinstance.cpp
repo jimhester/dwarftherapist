@@ -72,14 +72,17 @@ DFInstance::DFInstance(QObject* parent)
     m_DF.ReadItemTypes(m_itemstypes);
     m_DF.InitReadNameTables(m_names);
 
-    DFHack::t_settlement current;
-    m_DF.ReadCurrentSettlement(current);
-    m_generic_fort_name = QString(m_DF.TranslateName(current.name,2,m_names).c_str());
-    m_generic_fort_name = m_generic_fort_name.toLower();
-    m_generic_fort_name[0] = m_generic_fort_name[0].toTitleCase();
-    m_dwarf_fort_name = QString(m_DF.TranslateName(current.name,2,m_names,"DWARF").c_str());
-    m_dwarf_fort_name = m_dwarf_fort_name.toLower();
-    m_dwarf_fort_name[0] = m_dwarf_fort_name[0].toTitleCase();
+	heartbeat(); // check if a fort is loaded
+	if(m_is_ok){
+		DFHack::t_settlement current;
+		m_DF.ReadCurrentSettlement(current);
+		m_generic_fort_name = QString(m_DF.TranslateName(current.name,2,m_names).c_str());
+		m_generic_fort_name = m_generic_fort_name.toLower();
+		m_generic_fort_name[0] = m_generic_fort_name[0].toTitleCase();
+		m_dwarf_fort_name = QString(m_DF.TranslateName(current.name,2,m_names,"DWARF").c_str());
+		m_dwarf_fort_name = m_dwarf_fort_name.toLower();
+		m_dwarf_fort_name[0] = m_dwarf_fort_name[0].toTitleCase();
+	}
     }
 	connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 	// let subclasses start the timer, since we don't want to be checking before we're connected
@@ -128,11 +131,12 @@ void DFInstance::heartbeat() {
 	// simple read attempt that will fail if the DF game isn't running a fort, or isn't running at all
     m_DF.Suspend();
     m_DF.FinishReadCreatures(); // free old vector
-    m_DF.InitReadCreatures(m_num_creatures); // get new vector
+    m_creatures_inited = m_DF.InitReadCreatures(m_num_creatures); // get new vector
     m_DF.Resume();
 	if (m_num_creatures < 1) {
 		// no game loaded, or process is gone
 		emit connection_interrupted();
+		m_is_ok = false;
 	}
 }
 
@@ -237,7 +241,9 @@ QString DFInstance::getItemType(uint type,uint index)
 DFInstance::~DFInstance(){
     if(m_is_ok){
 		m_DF.FinishReadItems();
-        m_DF.FinishReadCreatures();
+		if(m_creatures_inited){
+			m_DF.FinishReadCreatures();
+		}
         m_DF.FinishReadNameTables();
         m_DF.FinishReadSettlements();
         m_DF.Detach();

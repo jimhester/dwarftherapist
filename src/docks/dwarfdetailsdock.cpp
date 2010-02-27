@@ -38,6 +38,11 @@ DwarfDetailsDock::DwarfDetailsDock(QWidget *parent, Qt::WindowFlags flags)
 	setWidget(l);
 }
 
+void DwarfDetailsDock::closeEvent(QCloseEvent *event)
+{
+	m_widget->stop_refresh();
+	event->accept();
+}
 void DwarfDetailsDock::show_dwarf(Dwarf *d) {
 	m_widget->show_dwarf(d);
 	if (!m_initialized) {

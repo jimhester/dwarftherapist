@@ -34,12 +34,14 @@ class DwarfDetailsWidget: public QWidget {
     Q_OBJECT
 public:
     DwarfDetailsWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+	void stop_refresh();
     public slots:
         void show_dwarf(Dwarf *d);
         void move_dwarf();
         void set_refresh();
 
 private:
+
     Ui::DwarfDetailsWidget *ui;
     QGridLayout *m_skills_layout;
     QVector<QObject*> m_cleanup_list;
