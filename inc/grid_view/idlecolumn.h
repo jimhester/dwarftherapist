@@ -34,6 +34,7 @@ public:
     IdleColumn* clone() {return new IdleColumn(*this);}
     QStandardItem *build_cell(Dwarf *d);
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
+	void redraw_cells();
 };
 
 #endif

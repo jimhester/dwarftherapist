@@ -45,7 +45,6 @@ void DwarfDetailsWidget::set_refresh(){
     }
 }
 void DwarfDetailsWidget::stop_refresh(){
-	m_refreshTimer->stop();
 	ui->checkBox->setCheckState(Qt::Unchecked);
 }
 void DwarfDetailsWidget::move_dwarf(){

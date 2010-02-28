@@ -115,7 +115,22 @@ void DwarfModel::load_dwarves() {
         }
     }
 }
-
+void DwarfModel::refresh_dwarves(){
+	foreach(Dwarf *d, m_dwarves) {
+        qApp->processEvents();
+        d->refresh_data();
+    }
+	foreach(ViewColumnSet *set, m_gridview->sets()) {
+		uint numCol = 0;
+		foreach(ViewColumn *col, set->columns()) {
+			if(col->type() == CT_IDLE){
+				col->redraw_cells();
+			}
+			numCol++;
+		}
+	}
+}
+	
 void DwarfModel::build_rows() {
 	// don't need to go delete the dwarf pointers in here, since the earlier foreach should have
 	// deleted them
@@ -408,23 +423,15 @@ void DwarfModel::clear_pending() {
 void DwarfModel::commit_pending() {
     bool success = true;
 
- //   QProgressDialog progress( "Committing changes, for best chance of success, don't touch anything!", "Abort Copy", 0,m_dwarves.size(),
- //                         qobject_cast<QWidget *>(parent()) );
-//    int count = 0;
- //   progress.setValue(0);
 	foreach(Dwarf *d, m_dwarves) {
         qApp->processEvents();
- //       if(progress.wasCanceled())
-  //          break;
 		if (d->pending_changes()) {
-   //         progress.setValue(count);
             if(!d->commit_pending()){
                 success = false;
                 break;
             }
             
 		}
-    //    count++;
 	}
 	load_dwarves();
     emit new_pending_changes(0);

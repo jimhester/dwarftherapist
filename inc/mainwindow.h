@@ -65,6 +65,7 @@ public:
 		void connect_to_df();
 		void read_dwarves();
         void set_refresh();
+		void refresh_dwarves();
 		//void scan_memory();
 		void new_pending_changes(int);
 		void lost_df_connection();

@@ -79,6 +79,8 @@ void Dwarf::refresh_data() {
     m_df->getAPI()->Suspend();
     m_df->getAPI()->ReadCreature(m_index, m_cre);
     m_address = m_cre.origin;
+    m_dirty.D_LOCATION =  (m_x != m_cre.x || m_y != m_cre.y || m_z != m_cre.z);
+    
     m_x = m_cre.x;
     m_y = m_cre.y;
     m_z = m_cre.z;
@@ -121,6 +123,8 @@ void Dwarf::refresh_data() {
 	TRACE << "\tTRAITS:" << m_traits.size();
 	m_money = m_cre.money; 
 	TRACE << "\tMONEY:" << m_money;
+    m_dirty.D_LOCATION = m_raw_happiness != m_cre.happiness;
+
 	m_raw_happiness = m_cre.happiness; 
 	TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
 	m_happiness = happiness_from_score(m_raw_happiness);
@@ -364,6 +368,7 @@ QString Dwarf::read_profession() {
 
 void Dwarf::read_current_job() {
     if (m_cre.current_job.active) {
+        m_dirty.D_JOB = m_current_job_id != m_cre.current_job.jobId;
         m_current_job_id = m_cre.current_job.jobId;
 		DwarfJob *job = GameDataReader::ptr()->get_job(m_current_job_id);
 		if (job)

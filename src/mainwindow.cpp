@@ -113,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
 	LOGD << "setting up connections for MainWindow";
-    connect(m_refreshTimer, SIGNAL(timeout()),this,SLOT(read_dwarves()));
+    connect(m_refreshTimer, SIGNAL(timeout()),this,SLOT(refresh_dwarves()));
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
@@ -252,6 +252,18 @@ void MainWindow::lost_df_connection() {
 		QMessageBox::information(this, tr("Unable to talk to Dwarf Fortress"),
 			tr("Dwarf Fortress has either stopped running, or you unloaded your game. Please re-connect when a fort is loaded."));
 	}
+}
+//this just refreshes the dwarf data, does not reorder anything
+void MainWindow::refresh_dwarves() {
+	if (!m_df || !m_df->is_ok()) {
+        lost_df_connection();
+		return;
+	}
+	if (m_model->get_dwarves().size() < 1) {
+        lost_df_connection();
+        return;
+    }
+	m_model->refresh_dwarves();
 }
 
 void MainWindow::read_dwarves() {

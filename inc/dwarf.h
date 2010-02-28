@@ -64,11 +64,19 @@ public:
         FOOD = 3
     } LIKETYPE;
 
+    struct dirty_bit{
+        unsigned D_LOCATION:1;
+        unsigned D_HAPPINESS:1;
+        unsigned D_JOB:1;
+    };
+
+
 	// getters
     //! Return the memory address (in hex) of this creature in the remote DF process
    // uint address() {return m_address;}
     
     //! return the the unique id for this creature
+    dirty_bit get_dirty(){return m_dirty;}
 	int id() {return m_id;}
     
     //! true if the creature is male, false if female or "it"
@@ -298,6 +306,7 @@ private:
     int m_total_xp;
     int m_migration_wave;
     int m_raw_profession;
+    dirty_bit m_dirty;
 
     uint m_x;
     uint m_y;

@@ -105,6 +105,7 @@ public:
 		void section_right_clicked(int idx);
 		void dwarf_group_toggled(const QString &group_name);
 		void dwarf_set_toggled(Dwarf *d);
+		void refresh_dwarves();
 
 private:
 	DFInstance *m_df;

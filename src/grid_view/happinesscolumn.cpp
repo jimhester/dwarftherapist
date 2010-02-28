@@ -91,8 +91,19 @@ void HappinessColumn::read_settings() {
 }
 
 void HappinessColumn::redraw_cells() {
-	/*foreach(Dwarf *d, m_cells.uniqueKeys()) {
-        if (d && m_cells[d] && m_cells[d]->model())
-		    m_cells[d]->setBackground(m_colors[d->get_happiness()]);
-	}*/
+    foreach(Dwarf *d, m_cells.uniqueKeys()) {
+		if (d && m_cells[d]){
+            if(d->get_dirty().D_HAPPINESS == true){
+                m_cells[d]->setData(d->get_raw_happiness(), DwarfModel::DR_SORT_VALUE);
+	            QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
+					              .arg(m_title)
+					              .arg(Dwarf::happiness_name(d->get_happiness()))
+					              .arg(d->get_raw_happiness())
+					              .arg(d->nice_name());
+	            m_cells[d]->setToolTip(tooltip);
+	            QColor bg = m_colors[d->get_happiness()];
+	            m_cells[d]->setBackground(QBrush(bg));
+            }
+        }
+    }
 }

@@ -118,7 +118,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 				TRACE << "FOUND OTHER CREATURE" << offset;
 			}
 		}
-        m_DF.ForceResume();
+        m_DF.Resume();
     } else {
         // we lost the fort!
         m_is_ok = false;
