@@ -150,9 +150,9 @@ MainWindow::MainWindow(QWidget *parent)
 	read_settings();
 	draw_professions();
     redraw_filter_scripts_cb();
-
+	/*
     if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
-	    check_latest_version();
+	    check_latest_version(); */ // QTBUG 7691 causes crash when exiting before the version check completes in 4.6.1+
 }
 
 MainWindow::~MainWindow() {
