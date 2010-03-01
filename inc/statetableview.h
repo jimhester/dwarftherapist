@@ -59,6 +59,8 @@ public:
 		void restore_expanded_items();
 		void currentChanged(const QModelIndex &, const QModelIndex &);
         void clicked(const QModelIndex &index);
+		void header_pressed(int index);
+		void header_clicked(int index);
 
 protected:
 	virtual void contextMenuEvent(QContextMenuEvent *event);
@@ -77,6 +79,7 @@ private:
     bool m_single_click_labor_changes;
     //! we have to store this ourselves since the click(), accept() etc... don't send which button caused them
     Qt::MouseButton m_last_button; 
+	bool m_column_already_sorted;
 
 	private slots:
 		void set_nickname();

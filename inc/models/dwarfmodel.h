@@ -91,6 +91,8 @@ public:
 	int selected_col() const {return m_selected_col;}
 	void filter_changed(const QString &);
 
+    void set_processing(bool processing);
+
     QModelIndex findOne(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, const QModelIndex &start_index = QModelIndex());
     QList<QPersistentModelIndex> findAll(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, QModelIndex start_index = QModelIndex());
 
@@ -116,6 +118,7 @@ private:
 	GROUP_BY m_group_by;
 	int m_selected_col;
 	GridView *m_gridview;
+    bool m_processing; //used to cancel out of refreshing if needed
 	
 signals:
 	void new_pending_changes(int);

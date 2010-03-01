@@ -89,7 +89,7 @@ QStandardItem *IdleColumn::build_aggregate(const QString &group_name, const QVec
 
 void IdleColumn::redraw_cells(){
 	foreach(Dwarf *d, m_cells.uniqueKeys()) {
-		if (d && m_cells[d]){
+		if (d && m_cells[d] && m_cells[d]->model()){
             if(d->get_dirty().D_JOB == true){
 	            QString pixmap_name(":img/help.png");
                 short job_id = d->current_job_id();
@@ -115,9 +115,7 @@ void IdleColumn::redraw_cells(){
 		            case DwarfJob::DJT_DEFAULT:	pixmap_name = ":status/img/control_play_blue.png";	break;
 		            }
 	            }
-	            }
-    		    
-	            m_cells[d]->setData(CT_IDLE, DwarfModel::DR_COL_TYPE);
+            }
 	            m_cells[d]->setData(d->current_job_id(), DwarfModel::DR_SORT_VALUE);
 	            QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
 		            .arg(m_title)

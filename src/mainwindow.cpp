@@ -81,7 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
 	, m_temp_cp(0)
     , m_dwarf_name_completer(0)
 {
-    m_refreshTimer = new QTimer(this);
+    m_refresh_timer = new QTimer(this);
     
 	ui->setupUi(this);
 	m_view_manager = new ViewManager(m_model, m_proxy, this);
@@ -113,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
 	LOGD << "setting up connections for MainWindow";
-    connect(m_refreshTimer, SIGNAL(timeout()),this,SLOT(refresh_dwarves()));
+    connect(m_refresh_timer, SIGNAL(timeout()),this,SLOT(refresh_dwarves()));
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
@@ -151,21 +151,31 @@ MainWindow::MainWindow(QWidget *parent)
 	draw_professions();
     redraw_filter_scripts_cb();
 
-    if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
-	    check_latest_version();
+    //if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
+	//    check_latest_version();
 }
 
 MainWindow::~MainWindow() {
+    delete m_refresh_timer;
 	delete ui;
 }
 
 void MainWindow::set_refresh(){
-    if(m_refreshTimer->timerId() == -1){
-        m_refreshTimer->start(2000);
+    if(m_refresh_timer->timerId() == -1){
+        m_refresh_timer->start(2000);
     }
     else{
-        m_refreshTimer->stop();
+        m_refresh_timer->stop();
     }
+}
+
+void MainWindow::pause_timer(){
+    m_refresh_timer->stop();
+    m_model->set_processing(true);
+}
+void MainWindow::resume_timer(){
+    m_refresh_timer->start(2000);
+    m_model->set_processing(false);
 }
 
 void MainWindow::read_settings() {
@@ -271,7 +281,7 @@ void MainWindow::read_dwarves() {
         lost_df_connection();
 		return;
 	}
-
+    pause_timer();
     QScrollBar * v_bar = m_view_manager->get_stv()->verticalScrollBar();
     QScrollBar * h_bar = m_view_manager->get_stv()->horizontalScrollBar();
     int oldVVal = v_bar->value();
@@ -302,6 +312,7 @@ void MainWindow::read_dwarves() {
     }
     v_bar->setValue(oldVVal);
     h_bar->setValue(oldHVal);
+    resume_timer();
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {
@@ -314,7 +325,7 @@ void MainWindow::set_interface_enabled(bool enabled) {
 	ui->act_import_existing_professions->setEnabled(enabled);
 }
 
-void MainWindow::check_latest_version(bool show_result_on_equal) {
+/*void MainWindow::check_latest_version(bool show_result_on_equal) {
     m_show_result_on_equal = show_result_on_equal;
 	//http://code.google.com/p/dwarftherapist/wiki/LatestVersion
 	Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
@@ -368,7 +379,7 @@ void MainWindow::version_check_finished(bool error) {
 		m_about_dialog->version_check_failed();
 	}
 }
-
+*/
 /*void MainWindow::scan_memory() {
 	m_scanner->show();
 }*/

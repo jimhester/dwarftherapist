@@ -68,6 +68,8 @@ StateTableView::StateTableView(QWidget *parent)
 	connect(this, SIGNAL(expanded(const QModelIndex &)), SLOT(index_expanded(const QModelIndex &)));
 	connect(this, SIGNAL(collapsed(const QModelIndex &)), SLOT(index_collapsed(const QModelIndex &)));
     connect(this, SIGNAL(clicked(const QModelIndex &)), SLOT(clicked(const QModelIndex &)));
+    connect(m_header, SIGNAL(sectionPressed(int)), this, SLOT(header_pressed(int)));
+	connect(m_header, SIGNAL(sectionClicked(int)), this, SLOT(header_clicked(int)));
 }
 
 StateTableView::~StateTableView()
@@ -388,4 +390,13 @@ void StateTableView::restore_expanded_items() {
 		expand(m_proxy->index(row, 0));
 	}
 	connect(this, SIGNAL(expanded(const QModelIndex &)), SLOT(index_expanded(const QModelIndex &)));
+}
+void StateTableView::header_clicked(int index) {
+	if(!m_column_already_sorted && index > 0 ) {
+		m_header->setSortIndicator(index,Qt::DescendingOrder);
+	}
+}
+
+void StateTableView::header_pressed(int index) {
+	m_column_already_sorted = (m_header->sortIndicatorSection() == index  );
 }

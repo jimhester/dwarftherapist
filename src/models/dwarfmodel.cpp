@@ -73,6 +73,9 @@ void DwarfModel::section_right_clicked(int col) {
 	emit dataChanged(index(0, col), index(rowCount()-1, col));
 }
 
+void DwarfModel::set_processing(bool processing){
+    m_processing = processing;
+}
 void DwarfModel::load_dwarves() {
 	// clear id->dwarf map
 	foreach(Dwarf *d, m_dwarves) {
@@ -116,8 +119,12 @@ void DwarfModel::load_dwarves() {
     }
 }
 void DwarfModel::refresh_dwarves(){
+    if(m_processing)
+        return;
 	foreach(Dwarf *d, m_dwarves) {
         qApp->processEvents();
+        if(m_processing)
+            return;
         d->refresh_data();
     }
 	foreach(ViewColumnSet *set, m_gridview->sets()) {

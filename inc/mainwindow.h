@@ -85,8 +85,8 @@ public:
         void add_new_filter_script();
 		
 		// version check
-		void check_latest_version(bool show_result_on_equal=false);
-		void version_check_finished(bool error);
+	//	void check_latest_version(bool show_result_on_equal=false);
+	//	void version_check_finished(bool error);
 
 		//links
 		void go_to_forums();
@@ -115,12 +115,15 @@ private:
     bool m_show_result_on_equal; //! used during version checks
     QCompleter *m_dwarf_name_completer;
     QStringList m_dwarf_names_list;
-    QTimer *m_refreshTimer;
+    QTimer *m_refresh_timer;
 
 	void closeEvent(QCloseEvent *evt); // override;
 
 	void read_settings();
 	void write_settings();
+
+    void pause_timer();
+    void resume_timer();
 
 	private slots:
 		void set_interface_enabled(bool);
