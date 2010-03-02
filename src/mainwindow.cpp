@@ -241,7 +241,7 @@ void MainWindow::connect_to_df() {
 	// logging and notifying the user.
     m_df = new DFInstance();
     if (m_df && m_df->is_ok() && m_df->find_running_copy()) {
-        this->setWindowTitle("Dwarf Therapist - " + m_df->getDwarfFortName() + ", \"" + m_df->getGenericFortName() + "\"");
+        this->setWindowTitle("Dwarf Therapist - " + m_df->get_dwarf_fort_name() + ", \"" + m_df->get_generic_fort_name() + "\"");
         m_lbl_status->setText(tr("Connected to ") + QString(m_df->getMem()->getVersion().c_str()));
 		connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
 		set_interface_enabled(true);

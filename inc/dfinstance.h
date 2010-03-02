@@ -46,28 +46,30 @@ public:
 
 	// accessors
 
-    DFHack::API * getAPI(){return &m_DF;}
+    DFHack::API * get_api(){return &m_DF;}
     DFHack::memory_info * getMem(){return m_mem;}
-    QString getCreatureType(uint type);
-    QString getBuildingType(uint type);
-    QString getStoneType(uint type);
-    QString getMetalType(uint type);
-    QString getItemType(uint type, uint index);
-    QString getWoodType(uint type);
-    QString getPlantType(uint type);
-    QString getPlantDrinkType(uint type);
-    QString getPlantFoodType(uint type);
-    QString getPlantExtractType(uint type);
-    QString getGenericFortName(){return m_generic_fort_name;}
-    QString getDwarfFortName(){return m_dwarf_fort_name;}
-    QString convertString(const char *);
-    QString convertString(const QString &);
+    QString get_creature_type(uint type);
+    QString get_building_type(uint type);
+    QString get_stone_type(uint type);
+    QString get_medal_type(uint type);
+    QString get_item_type(uint type, uint index);
+    QString get_wood_type(uint type);
+    QString get_plant_type(uint type);
+    QString get_plant_drink_type(uint type);
+    QString get_plant_food_type(uint type);
+    QString get_plant_extract_type(uint type);
+    QString get_generic_fort_name(){return m_generic_fort_name;}
+    QString get_dwarf_fort_name(){return m_dwarf_fort_name;}
+    QString convert_string(const char *);
+    QString convert_string(const QString &);
 
 	bool is_ok(){return m_is_ok;}
 	bool has_shm(){return m_has_shm;}
+    
+    uint get_num_creatures(){return m_num_creatures;}
 	
-    QString translateName(const t_lastname &,string trans);
-    QString translateName(const t_squadname &, string trans);
+    QString translate_name(const t_lastname &,string trans);
+    QString translate_name(const t_squadname &, string trans);
 	
 	QVector<Dwarf*> load_dwarves();
 

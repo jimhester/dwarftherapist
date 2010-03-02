@@ -87,12 +87,10 @@ DFInstance::DFInstance(QObject* parent)
 	connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 	// let subclasses start the timer, since we don't want to be checking before we're connected
 }
-QString DFInstance::convertString(const char * str)
-{
+QString DFInstance::convert_string(const char * str){
     return m_codec->toUnicode(str,strlen(str));
 }
-QString DFInstance::convertString(const QString & str)
-{
+QString DFInstance::convert_string(const QString & str){
     return m_codec->toUnicode(str.toAscii().data(),str.size());
 }
 bool DFInstance::find_running_copy() {
@@ -140,21 +138,19 @@ void DFInstance::heartbeat() {
 	}
 }
 
-QString DFInstance::translateName(const t_lastname &name , string trans)
-{
+QString DFInstance::translate_name(const t_lastname &name , string trans){
     QString qname(m_DF.TranslateName(name, m_names,trans).c_str());
     qname = qname.toLower();
     qname[0]=qname[0].toUpper();
     return(qname);
 }
-QString DFInstance::translateName(const t_squadname& name, string trans)
-{
+QString DFInstance::translate_name(const t_squadname& name, string trans){
     QString qname(m_DF.TranslateName(name, m_names,trans).c_str());
     qname = qname.toLower();
     qname[0]=qname[0].toUpper();
     return(qname);
 }
-QString DFInstance::getCreatureType(uint type)
+QString DFInstance::get_creature_type(uint type)
  {
    if(m_creaturestypes.size() > type)
      {
@@ -162,40 +158,35 @@ QString DFInstance::getCreatureType(uint type)
      }
      return QString("");
 }
-QString DFInstance::getBuildingType(uint type)
-{
+QString DFInstance::get_building_type(uint type){
   if(m_buildingtypes.size() > type)
     {
         return QString(m_buildingtypes[type].c_str());
     }
     return QString("");
 }
-QString DFInstance::getMetalType(uint type)
-{
+QString DFInstance::get_medal_type(uint type){
   if(m_metalstypes.size() > type)
     {
         return QString(m_metalstypes[type].name);
     }
     return QString("");
 }
-QString DFInstance::getStoneType(uint type)
-{
+QString DFInstance::get_stone_type(uint type){
   if(m_stonestypes.size() > type)
     {
         return QString(m_stonestypes[type].name);
     }
     return QString("");
 }
-QString DFInstance::getWoodType(uint type)
-{
+QString DFInstance::get_wood_type(uint type){
   if(m_woodstypes.size() > type)
     {
         return QString(m_woodstypes[type].name);
     }
     return QString("");
 }
-QString DFInstance::getPlantType(uint type)
-{
+QString DFInstance::get_plant_type(uint type){
   if(m_plantstypes.size() > type)
     {
         return QString(m_plantstypes[type].name);
@@ -203,32 +194,28 @@ QString DFInstance::getPlantType(uint type)
     return QString("");
 }
 
-QString DFInstance::getPlantDrinkType(uint type)
-{
+QString DFInstance::get_plant_drink_type(uint type){
   if(m_plantstypes.size() > type)
     {
         return QString(m_plantstypes[type].drink_name);
     }
     return QString("");
 }
-QString DFInstance::getPlantFoodType(uint type)
-{
+QString DFInstance::get_plant_food_type(uint type){
   if(m_plantstypes.size() > type)
     {
         return QString(m_plantstypes[type].food_name);
     }
     return QString("");
 }
-QString DFInstance::getPlantExtractType(uint type)
-{
+QString DFInstance::get_plant_extract_type(uint type){
   if(m_plantstypes.size() > type)
     {
         return QString(m_plantstypes[type].extract_name);
     }
     return QString("");
 }
-QString DFInstance::getItemType(uint type,uint index)
-{
+QString DFInstance::get_item_type(uint type,uint index){
   if(m_itemstypes.size() > type)
     {
         if(m_itemstypes[type].size() > index)

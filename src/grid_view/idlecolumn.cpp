@@ -89,7 +89,7 @@ QStandardItem *IdleColumn::build_aggregate(const QString &group_name, const QVec
 
 void IdleColumn::redraw_cells(){
 	foreach(Dwarf *d, m_cells.uniqueKeys()) {
-		if (d && m_cells[d] && m_cells[d]->model()){
+		if (d && m_cells[d]){
             if(d->get_dirty().D_JOB == true){
 	            QString pixmap_name(":img/help.png");
                 short job_id = d->current_job_id();
