@@ -89,33 +89,31 @@ QStandardItem *IdleColumn::build_aggregate(const QString &group_name, const QVec
 
 void IdleColumn::redraw_cells(){
 	foreach(Dwarf *d, m_cells.uniqueKeys()) {
-		if (d && m_cells[d]){
-            if(d->get_dirty().D_JOB == true){
-	            QString pixmap_name(":img/help.png");
-                short job_id = d->current_job_id();
-	            if (job_id == -1) {
-		            pixmap_name = ":status/img/bullet_red.png"; // idle
-	            } else {
-		            DwarfJob *job = GameDataReader::ptr()->get_job(job_id);
-	            if (job) {
-		            switch (job->type) {
-		            case DwarfJob::DJT_IDLE:	pixmap_name = ":status/img/bullet_red.png"; 		break;
-		            case DwarfJob::DJT_DIG:		pixmap_name = ":status/img/pickaxe.png";			break;
-		            case DwarfJob::DJT_CUT:     pixmap_name = ":status/img/axe.png";                break;
-		            case DwarfJob::DJT_REST:	pixmap_name = ":status/img/status_sleep.png";		break;
-		            case DwarfJob::DJT_DRINK:	pixmap_name = ":status/img/status_drink.png";		break;
-		            case DwarfJob::DJT_FOOD:	pixmap_name = ":status/img/cheese.png"; 			break;
-		            case DwarfJob::DJT_BUILD:	pixmap_name = ":status/img/gear.png";       		break;
-		            case DwarfJob::DJT_HAUL:	pixmap_name = ":status/img/status_haul.png";	   	break;
-		            case DwarfJob::DJT_FIGHT:	pixmap_name = ":status/img/status_fight2.png";	    break;
-		            case DwarfJob::DJT_MOOD:	pixmap_name = ":img/exclamation.png";       	    break;
-		            case DwarfJob::DJT_FORGE:	pixmap_name = ":status/img/status_forge.png"; 	    break;
-    				
-		            default:
-		            case DwarfJob::DJT_DEFAULT:	pixmap_name = ":status/img/control_play_blue.png";	break;
-		            }
+		if (d && d->can_read && d->get_dirty().D_JOB && m_cells[d] && m_cells[d]->model()){
+            QString pixmap_name(":img/help.png");
+            short job_id = d->current_job_id();
+            if (job_id == -1) {
+	            pixmap_name = ":status/img/bullet_red.png"; // idle
+            } else {
+	            DwarfJob *job = GameDataReader::ptr()->get_job(job_id);
+            if (job) {
+	            switch (job->type) {
+	            case DwarfJob::DJT_IDLE:	pixmap_name = ":status/img/bullet_red.png"; 		break;
+	            case DwarfJob::DJT_DIG:		pixmap_name = ":status/img/pickaxe.png";			break;
+	            case DwarfJob::DJT_CUT:     pixmap_name = ":status/img/axe.png";                break;
+	            case DwarfJob::DJT_REST:	pixmap_name = ":status/img/status_sleep.png";		break;
+	            case DwarfJob::DJT_DRINK:	pixmap_name = ":status/img/status_drink.png";		break;
+	            case DwarfJob::DJT_FOOD:	pixmap_name = ":status/img/cheese.png"; 			break;
+	            case DwarfJob::DJT_BUILD:	pixmap_name = ":status/img/gear.png";       		break;
+	            case DwarfJob::DJT_HAUL:	pixmap_name = ":status/img/status_haul.png";	   	break;
+	            case DwarfJob::DJT_FIGHT:	pixmap_name = ":status/img/status_fight2.png";	    break;
+	            case DwarfJob::DJT_MOOD:	pixmap_name = ":img/exclamation.png";       	    break;
+	            case DwarfJob::DJT_FORGE:	pixmap_name = ":status/img/status_forge.png"; 	    break;
+				
+	            default:
+	            case DwarfJob::DJT_DEFAULT:	pixmap_name = ":status/img/control_play_blue.png";	break;
 	            }
-            }
+                }
 	            m_cells[d]->setData(d->current_job_id(), DwarfModel::DR_SORT_VALUE);
 	            QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
 		            .arg(m_title)

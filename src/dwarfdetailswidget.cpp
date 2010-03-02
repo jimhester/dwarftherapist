@@ -32,6 +32,7 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
     , ui(new Ui::DwarfDetailsWidget)
 {
+    m_d = 0;
     m_refreshTimer = new QTimer(this);
     connect(m_refreshTimer, SIGNAL(timeout()),this,SLOT(move_dwarf()));
 	ui->setupUi(this);
@@ -48,8 +49,8 @@ void DwarfDetailsWidget::stop_refresh(){
 	ui->checkBox->setCheckState(Qt::Unchecked);
 }
 void DwarfDetailsWidget::move_dwarf(){
-    m_d->refresh_data();
-    m_d->move_view_to();
+        m_d->refresh_data();
+        m_d->move_view_to();
 }
 void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     m_d = d;

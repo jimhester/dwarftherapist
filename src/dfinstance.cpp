@@ -127,15 +127,19 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
 void DFInstance::heartbeat() {
 	// simple read attempt that will fail if the DF game isn't running a fort, or isn't running at all
-    m_DF.Suspend();
-    m_DF.FinishReadCreatures(); // free old vector
-    m_creatures_inited = m_DF.InitReadCreatures(m_num_creatures); // get new vector
-    m_DF.Resume();
-	if (m_num_creatures < 1) {
-		// no game loaded, or process is gone
-		emit connection_interrupted();
-		m_is_ok = false;
-	}
+    if(Dwarf::can_read){
+        Dwarf::can_read = false;
+        m_DF.Suspend();
+        m_DF.FinishReadCreatures(); // free old vector
+        m_creatures_inited = m_DF.InitReadCreatures(m_num_creatures); // get new vector
+        m_DF.Resume();
+	    if (m_num_creatures < 1) {
+		    // no game loaded, or process is gone
+		    emit connection_interrupted();
+		    m_is_ok = false;
+	    }
+        Dwarf::can_read = true;
+    }
 }
 
 QString DFInstance::translate_name(const t_lastname &name , string trans){

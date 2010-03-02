@@ -118,7 +118,6 @@ private:
 	GROUP_BY m_group_by;
 	int m_selected_col;
 	GridView *m_gridview;
-    bool m_processing; //used to cancel out of refreshing if needed
 	
 signals:
 	void new_pending_changes(int);

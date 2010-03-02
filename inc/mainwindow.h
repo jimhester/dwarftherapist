@@ -122,9 +122,6 @@ private:
 	void read_settings();
 	void write_settings();
 
-    void pause_timer();
-    void resume_timer();
-
 	private slots:
 		void set_interface_enabled(bool);
 		

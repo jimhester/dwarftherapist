@@ -169,15 +169,6 @@ void MainWindow::set_refresh(){
     }
 }
 
-void MainWindow::pause_timer(){
-    m_refresh_timer->stop();
-    m_model->set_processing(true);
-}
-void MainWindow::resume_timer(){
-    m_refresh_timer->start(2000);
-    m_model->set_processing(false);
-}
-
 void MainWindow::read_settings() {
 	m_reading_settings = true;
 	m_settings->beginGroup("window");
@@ -265,7 +256,7 @@ void MainWindow::lost_df_connection() {
 }
 //this just refreshes the dwarf data, does not reorder anything
 void MainWindow::refresh_dwarves() {
-	if (!m_df || !m_df->is_ok()) {
+    if (!m_df || !m_df->is_ok()) {
         lost_df_connection();
 		return;
 	}
@@ -273,7 +264,7 @@ void MainWindow::refresh_dwarves() {
         lost_df_connection();
         return;
     }
-	m_model->refresh_dwarves();
+    m_model->refresh_dwarves();
 }
 
 void MainWindow::read_dwarves() {
@@ -281,23 +272,26 @@ void MainWindow::read_dwarves() {
         lost_df_connection();
 		return;
 	}
-    pause_timer();
+    Dwarf::can_read = false;
     QScrollBar * v_bar = m_view_manager->get_stv()->verticalScrollBar();
     QScrollBar * h_bar = m_view_manager->get_stv()->horizontalScrollBar();
     int oldVVal = v_bar->value();
     int oldHVal = h_bar->value();
-	m_model->set_instance(m_df);
-	m_model->load_dwarves();
+    DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dwarfdetailsdock"));
+    dock->reset();
+    m_model->clear_all();
+    m_model->set_instance(m_df);
+    m_model->load_dwarves();
 
     if (m_model->get_dwarves().size() < 1) {
         lost_df_connection();
         return;
     }
 
-	new_pending_changes(0);
-	// cheap trick to setup the view correctly
-	m_view_manager->redraw_current_tab();
-	ui->lbl_dwarf_total->setText(QString::number(m_model->get_dwarves().size()));
+    new_pending_changes(0);
+    // cheap trick to setup the view correctly
+    m_view_manager->redraw_current_tab();
+    ui->lbl_dwarf_total->setText(QString::number(m_model->get_dwarves().size()));
 
     // setup the filter auto-completer
     m_dwarf_names_list.clear();
@@ -312,7 +306,6 @@ void MainWindow::read_dwarves() {
     }
     v_bar->setValue(oldVVal);
     h_bar->setValue(oldHVal);
-    resume_timer();
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {

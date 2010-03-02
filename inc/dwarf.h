@@ -43,6 +43,7 @@ class Dwarf : public QObject
 
 public:
     static Dwarf* get_dwarf(DFInstance *df, const uint &index);
+    static bool can_read; // when dwarves are being reloaded, this is set to false
 	virtual ~Dwarf();
 
 	typedef enum {
@@ -78,6 +79,8 @@ public:
     //! return the the unique id for this creature
     dirty_bit get_dirty(){return m_dirty;}
 	int id() {return m_id;}
+
+    bool is_ok(); // returns false if the dwarf is not initialized properly
     
     //! true if the creature is male, false if female or "it"
 	Q_INVOKABLE bool is_male() {return m_is_male;}
@@ -355,4 +358,5 @@ private:
 signals:
 	void name_changed();
 };
+
 #endif // DWARF_H
