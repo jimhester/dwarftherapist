@@ -1,3 +1,17 @@
+RELEASE DFhack 0.1.0 (March 03, 2010)
+CHANGES SINCE 0.0.5
+
+  * major stability improvements, this should be at least on par with the original DT now
+  * the reloading now only refreshes the jobs and happiness of the dwarves, so it is much faster
+  * added a death icon for when a dwarf dies when it is auto-refreshing
+  * use the dfhack shm to edit the string objects for names and professions directly, no restrictions on name lengths any longer, and no data corruption on windows and linux!
+  * scrapped all of the hackish key scripting to input names
+  * added the loaded fortresses name to the title bar
+  * changed sorting of some skills, as per Zhentar's suggestions
+  * fixed many crash bugs related to refreshing the dwarves while doing other things in DT
+  * updated QT in precompiled windows version to 4.6.2
+  * uses the latest stable dfhack before the shm rewrite
+
 RELEASE DFhack 0.0.5 (Janurary 12, 2009)
 CHANGES DFHack 0.0.1
 ===============================================================================
