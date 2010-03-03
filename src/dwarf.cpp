@@ -503,7 +503,7 @@ int Dwarf::pending_changes() {
 }
 
 void Dwarf::clear_pending() {
-	refresh_data();
+	//refresh_data(); FIXME
 }
 
 bool Dwarf::commit_pending() {

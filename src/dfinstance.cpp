@@ -60,6 +60,7 @@ DFInstance::DFInstance(QObject* parent)
 	    m_has_shm = false;
     }
     m_mem = m_DF.getMemoryInfo();
+    DFHack::t_settlement current;
     try{
         m_DF.InitViewAndCursor(); 
         m_DF.InitViewSize(); 
@@ -75,7 +76,6 @@ DFInstance::DFInstance(QObject* parent)
         m_DF.ReadItemTypes(m_itemstypes); 
         m_DF.InitReadNameTables(m_names);
         heartbeat(); // check if a fort is loaded
-	    DFHack::t_settlement current;
         m_DF.Suspend();
 	    m_DF.ReadCurrentSettlement(current);
         m_DF.Resume();

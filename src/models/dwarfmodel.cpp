@@ -81,10 +81,6 @@ void DwarfModel::section_right_clicked(int col) {
 
 void DwarfModel::load_dwarves() {
 	// clear id->dwarf map
-	foreach(Dwarf *d, m_dwarves) {
-		delete d;
-        d=0;
-	}
 	clear_all();
 	if (rowCount())
 		removeRows(0, rowCount());
