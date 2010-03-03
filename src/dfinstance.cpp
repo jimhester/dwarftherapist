@@ -83,6 +83,7 @@ DFInstance::DFInstance(QObject* parent)
     catch(...){
         m_is_ok = false;
         m_DF.Resume();
+        m_DF.Detach();
         return;
     }
 
@@ -238,7 +239,7 @@ QString DFInstance::get_item_type(uint type,uint index){
 DFInstance::~DFInstance(){
     if(m_is_ok){
         try{
-		m_DF.FinishReadItems();
+//		m_DF.FinishReadItems();
 		if(m_creatures_inited){
 			m_DF.FinishReadCreatures();
 		}
