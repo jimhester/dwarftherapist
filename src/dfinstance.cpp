@@ -42,50 +42,59 @@ DFInstance::DFInstance(QObject* parent)
 	,m_heartbeat_timer(new QTimer(this))
 {
     m_codec = new CP437Codec;
-    if(!m_DF.Attach())
-    {
+    try{
+    m_DF.Attach();
+    }
+    catch(...){
         m_is_ok = false;
+        return;
+    }
+    m_is_ok = true;
+    // test if connected with shm
+    DFHack::SHMProcess* test = dynamic_cast<DFHack::SHMProcess*>(m_DF.getProcess());
+    if(test != NULL){
+	    m_has_shm = true;
     }
     else{
-        m_is_ok = true;
-		// test if connected with shm
-		DFHack::SHMProcess* test = dynamic_cast<DFHack::SHMProcess*>(m_DF.getProcess());
-		if(test != NULL){
-			m_has_shm = true;
-		}
-		else{
-			QMessageBox::warning(0, tr("Warning"), tr("SDL.dll not installed properly\ncustom name and profession writing disabled\nTo enable please rename the original SDL.dll to SDLreal.dll and copy the DFhack SDL.dll into your Dwarf Fortress directory"));
-			m_has_shm = false;
-		}
-    m_mem = m_DF.getMemoryInfo();
-    m_DF.InitViewAndCursor();
-    m_DF.InitViewSize();
-    m_DF.InitMap(); // for getSize();
-    
-    m_DF.InitReadCreatures(m_num_creatures);
-    m_DF.InitReadSettlements(m_num_settlements);
-    m_DF.ReadCreatureMatgloss(m_creaturestypes);
-    m_DF.ReadWoodMatgloss(m_woodstypes);
-    m_DF.ReadPlantMatgloss(m_plantstypes);
-    m_DF.ReadStoneMatgloss(m_stonestypes);
-    m_DF.ReadMetalMatgloss(m_metalstypes);
-    m_DF.ReadItemTypes(m_itemstypes);
-    m_DF.InitReadNameTables(m_names);
-
-	heartbeat(); // check if a fort is loaded
-	if(m_is_ok){
-		DFHack::t_settlement current;
-		m_DF.ReadCurrentSettlement(current);
-		m_generic_fort_name = QString(m_DF.TranslateName(current.name,2,m_names).c_str());
-		m_generic_fort_name = m_generic_fort_name.toLower();
-		m_generic_fort_name[0] = m_generic_fort_name[0].toTitleCase();
-		m_dwarf_fort_name = QString(m_DF.TranslateName(current.name,2,m_names,"DWARF").c_str());
-		m_dwarf_fort_name = m_dwarf_fort_name.toLower();
-		m_dwarf_fort_name[0] = m_dwarf_fort_name[0].toTitleCase();
-	}
+	    QMessageBox::warning(0, tr("Warning"), tr("SHM not installed properly\ncustom name and profession writing disabled\nTo enable please see INSTALL.txt"));
+	    m_has_shm = false;
     }
-	connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
-	// let subclasses start the timer, since we don't want to be checking before we're connected
+    m_mem = m_DF.getMemoryInfo();
+    try{
+        m_DF.InitViewAndCursor(); 
+        m_DF.InitViewSize(); 
+        m_DF.InitMap();  // for getSize();
+        
+        m_DF.InitReadCreatures(m_num_creatures); 
+        m_DF.InitReadSettlements(m_num_settlements); 
+        m_DF.ReadCreatureMatgloss(m_creaturestypes); 
+        m_DF.ReadWoodMatgloss(m_woodstypes); 
+        m_DF.ReadPlantMatgloss(m_plantstypes); 
+        m_DF.ReadStoneMatgloss(m_stonestypes); 
+        m_DF.ReadMetalMatgloss(m_metalstypes); 
+        m_DF.ReadItemTypes(m_itemstypes); 
+        m_DF.InitReadNameTables(m_names);
+        heartbeat(); // check if a fort is loaded
+	    DFHack::t_settlement current;
+        m_DF.Suspend();
+	    m_DF.ReadCurrentSettlement(current);
+        m_DF.Resume();
+        }
+    catch(...){
+        m_is_ok = false;
+        m_DF.Resume();
+        return;
+    }
+
+
+	    m_generic_fort_name = QString(m_DF.TranslateName(current.name,2,m_names).c_str());
+	    m_generic_fort_name = m_generic_fort_name.toLower();
+	    m_generic_fort_name[0] = m_generic_fort_name[0].toTitleCase();
+	    m_dwarf_fort_name = QString(m_DF.TranslateName(current.name,2,m_names,"DWARF").c_str());
+	    m_dwarf_fort_name = m_dwarf_fort_name.toLower();
+	    m_dwarf_fort_name[0] = m_dwarf_fort_name[0].toTitleCase();
+        connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
+    
 }
 QString DFInstance::convert_string(const char * str){
     return m_codec->toUnicode(str,strlen(str));
@@ -120,6 +129,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     } else {
         // we lost the fort!
         m_is_ok = false;
+        m_DF.Detach();
     }
 	LOGI << "found" << dwarves.size() << "dwarves out of" << m_num_creatures << "creatures";
 	return dwarves;
@@ -127,18 +137,14 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
 void DFInstance::heartbeat() {
 	// simple read attempt that will fail if the DF game isn't running a fort, or isn't running at all
-    if(Dwarf::can_read){
-        Dwarf::can_read = false;
-        m_DF.Suspend();
-        m_DF.FinishReadCreatures(); // free old vector
-        m_creatures_inited = m_DF.InitReadCreatures(m_num_creatures); // get new vector
-        m_DF.Resume();
-	    if (m_num_creatures < 1) {
-		    // no game loaded, or process is gone
-		    emit connection_interrupted();
-		    m_is_ok = false;
-	    }
-        Dwarf::can_read = true;
+    m_DF.Suspend();
+    m_DF.FinishReadCreatures(); // free old vector
+    m_creatures_inited = m_DF.InitReadCreatures(m_num_creatures); // get new vector
+    m_DF.Resume();
+    if (m_num_creatures < 1) {
+	    // no game loaded, or process is gone
+	    emit connection_interrupted();
+	    m_is_ok = false;
     }
 }
 
@@ -231,6 +237,7 @@ QString DFInstance::get_item_type(uint type,uint index){
 }
 DFInstance::~DFInstance(){
     if(m_is_ok){
+        try{
 		m_DF.FinishReadItems();
 		if(m_creatures_inited){
 			m_DF.FinishReadCreatures();
@@ -238,5 +245,7 @@ DFInstance::~DFInstance(){
         m_DF.FinishReadNameTables();
         m_DF.FinishReadSettlements();
         m_DF.Detach();
+        }
+        catch(...){}
     }
 }
