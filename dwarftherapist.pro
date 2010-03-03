@@ -30,7 +30,7 @@ linux-g++|linux-g++-32 {
     CFLAGS = -m32
     DEFINES += _LINUX \
         BUILD_QXT \
-        BUILD_LINUX
+        LINUX_BUILD
     INCLUDEPATH += $$(QTDIR)/mkspecs/linux-g++
     LIBS += -ldfhack
 }
