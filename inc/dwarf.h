@@ -241,6 +241,7 @@ public:
 	//! returns true if this dwarf can have labors specified on it
 	Q_INVOKABLE bool can_set_labors() {return m_can_set_labors;}
 
+    bool is_dead() { return m_cre.flags2.bits.killed; }
     /************************************************************************/
     /* SQUAD STUFF                                                          */
     /************************************************************************/
