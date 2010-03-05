@@ -91,16 +91,16 @@ void Dwarf::refresh_data() {
     m_is_male = (int)sex == 1;
     TRACE << "\tMALE?" << m_is_male;
 
-	m_first_name = m_df->convertString(m_cre.first_name); 
+	m_first_name = m_df->convertString(m_cre.name.first_name); 
 	if (m_first_name.size() > 1)
 		m_first_name[0] = m_first_name[0].toUpper();
 	TRACE << "\tFIRSTNAME:" << m_first_name;
-	m_nick_name = m_df->convertString(m_cre.nick_name);
+	m_nick_name = m_df->convertString(m_cre.name.nickname);
 	TRACE << "\tNICKNAME:" << m_nick_name;
 	m_pending_nick_name = m_nick_name;
-	m_last_name = m_df->convertString(m_df->translateName(m_cre.last_name,"DWARF"));
+	m_last_name = m_df->convertString(m_df->translateName(m_cre.name,false));
 	TRACE << "\tLASTNAME:" << m_last_name;
-	m_translated_last_name = m_df->convertString(m_df->translateName(m_cre.last_name,"GENERIC"));
+	m_translated_last_name = m_df->convertString(m_df->translateName(m_cre.name,true));
     calc_names();
 
 	m_custom_profession = m_df->convertString(m_cre.custom_profession); 
@@ -137,9 +137,9 @@ void Dwarf::refresh_data() {
     m_squad_leader_id = m_cre.squad_leader_id; 
     TRACE << "\tSQUAD LEADER ID:" << m_squad_leader_id;
 
-    m_squad_name = m_df->convertString(m_df->translateName(m_cre.squad_name,"DWARF"));
+    m_squad_name = m_df->convertString(m_df->translateName(m_cre.squad_name,false));
     TRACE << "\tSQUAD NAME:" << m_squad_name;
-    m_generic_squad_name = m_df->convertString(m_df->translateName(m_cre.squad_name,"GENERIC"));
+    m_generic_squad_name = m_df->convertString(m_df->translateName(m_cre.squad_name,true));
     TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
 
 	TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";

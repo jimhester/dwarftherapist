@@ -66,8 +66,7 @@ public:
 	bool is_ok(){return m_is_ok;}
 	bool has_shm(){return m_has_shm;}
 	
-    QString translateName(const t_lastname &,string trans);
-    QString translateName(const t_squadname &, string trans);
+    QString translateName(const t_name &,bool inEnglish);
 	
 	QVector<Dwarf*> load_dwarves();
 
@@ -83,7 +82,8 @@ private:
     vector<t_matgloss> m_woodstypes;
     vector< vector<t_itemType> > m_itemstypes;
 
-    map<string, vector<string> > m_names;
+    vector<vector<string>> m_english;
+	vector<vector<string>> m_foreign;
     int m_attach_count;
     QTimer *m_heartbeat_timer;
     DFHack::API m_DF;

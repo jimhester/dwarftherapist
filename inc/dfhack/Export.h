@@ -22,19 +22,22 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
-/// TODO: add visibility for GCC?
 #ifdef LINUX_BUILD
-#   ifndef DFHACK_EXPORT
-#       define DFHACK_EXPORT
-#   endif
+#ifndef DFHACK_EXPORT
+#ifndef SWIGIMPORTED
+#define DFHACK_EXPORT __attribute__ ((visibility("default")))
 #else
-#   ifdef BUILD_DFHACK_LIB
-#       ifndef DFHACK_EXPORT
-#           define DFHACK_EXPORT __declspec(dllexport)
-#       endif
-#   else
-#       ifndef DFHACK_EXPORT
-#           define DFHACK_EXPORT __declspec(dllimport)
-#       endif
-#   endif
+#define DFHACK_EXPORT
+#endif
+#endif
+#else
+#ifdef BUILD_DFHACK_LIB
+#ifndef DFHACK_EXPORT
+#define DFHACK_EXPORT __declspec(dllexport)
+#endif
+#else
+#ifndef DFHACK_EXPORT
+#define DFHACK_EXPORT __declspec(dllimport)
+#endif
+#endif
 #endif

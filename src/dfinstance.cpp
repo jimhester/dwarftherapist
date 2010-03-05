@@ -70,10 +70,10 @@ DFInstance::DFInstance(QObject* parent)
     m_DF.ReadStoneMatgloss(m_stonestypes);
     m_DF.ReadMetalMatgloss(m_metalstypes);
     m_DF.ReadItemTypes(m_itemstypes);
-    m_DF.InitReadNameTables(m_names);
+    m_DF.InitReadNameTables(m_english,m_foreign);
 
 	heartbeat(); // check if a fort is loaded
-	if(m_is_ok){
+	/*if(m_is_ok){
 		DFHack::t_settlement current;
 		m_DF.ReadCurrentSettlement(current);
 		m_generic_fort_name = QString(m_DF.TranslateName(current.name,2,m_names).c_str());
@@ -82,7 +82,7 @@ DFInstance::DFInstance(QObject* parent)
 		m_dwarf_fort_name = QString(m_DF.TranslateName(current.name,2,m_names,"DWARF").c_str());
 		m_dwarf_fort_name = m_dwarf_fort_name.toLower();
 		m_dwarf_fort_name[0] = m_dwarf_fort_name[0].toTitleCase();
-	}
+	}*/
     }
 	connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 	// let subclasses start the timer, since we don't want to be checking before we're connected
@@ -140,20 +140,12 @@ void DFInstance::heartbeat() {
 	}
 }
 
-QString DFInstance::translateName(const t_lastname &name , string trans)
+QString DFInstance::translateName(const t_name &name , bool in_english)
 {
-    QString qname(m_DF.TranslateName(name, m_names,trans).c_str());
-    qname = qname.toLower();
-    qname[0]=qname[0].toUpper();
+    QString qname(m_DF.TranslateName(name, m_english, m_foreign,in_english).c_str());
     return(qname);
 }
-QString DFInstance::translateName(const t_squadname& name, string trans)
-{
-    QString qname(m_DF.TranslateName(name, m_names,trans).c_str());
-    qname = qname.toLower();
-    qname[0]=qname[0].toUpper();
-    return(qname);
-}
+
 QString DFInstance::getCreatureType(uint type)
  {
    if(m_creaturestypes.size() > type)
