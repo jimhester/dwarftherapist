@@ -142,7 +142,14 @@ void Dwarf::refresh_data() {
     m_generic_squad_name = m_df->convertString(m_df->translateName(m_cre.squad_name,true));
     TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
 
+	if(m_cre.flags1.bits.had_mood && (m_cre.mood == 0xFFFF || m_cre.mood == 8 ) ) //No idea what 8 is. But it's what DF checks!
+		m_artifact_name = m_df->translateName(m_cre.artifact_name,false);
+	else
+		m_artifact_name = "";
+
 	TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
+
+
 	m_df->getAPI()->Resume();
 }
 

@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "memorysegment.h"
 #include "dfhack/DFProcess.h"
-
+#include "dfhack/DFError.h"
 
 DFInstance::DFInstance(QObject* parent)
 	:QObject(parent)
@@ -41,49 +41,54 @@ DFInstance::DFInstance(QObject* parent)
     ,m_DF ("etc/Memory.xml")
 	,m_heartbeat_timer(new QTimer(this))
 {
+	try {
+		m_is_ok = m_DF.Attach();
+	} 
+	catch(DFHack::Error::NoProcess &e) 
+	{
+		QMessageBox::warning(0,tr("Error"),tr("Unable to locate a running copy of Dwarf Fortress"));
+		m_is_ok = false;
+		return;
+	} /*catch(DFHack::Error::CantAttach &e) {
+		QMessageBox::warning(0,tr("Error"),tr("Unable to attach to Dwarf Fortress"));
+		m_is_ok = false;
+		return;
+	}*/
+
     m_codec = new CP437Codec;
-    if(!m_DF.Attach())
-    {
-        m_is_ok = false;
-    }
-    else{
-        m_is_ok = true;
-		// test if connected with shm
-		DFHack::SHMProcess* test = dynamic_cast<DFHack::SHMProcess*>(m_DF.getProcess());
-		if(test != NULL){
-			m_has_shm = true;
-		}
-		else{
-			QMessageBox::warning(0, tr("Warning"), tr("SDL.dll not installed properly\ncustom name and profession writing disabled\nTo enable please rename the original SDL.dll to SDLreal.dll and copy the DFhack SDL.dll into your Dwarf Fortress directory"));
-			m_has_shm = false;
-		}
-    m_mem = m_DF.getMemoryInfo();
-    m_DF.InitViewAndCursor();
-    m_DF.InitViewSize();
-    m_DF.InitMap(); // for getSize();
+
+	// test if connected with shm
+	DFHack::SHMProcess* test = dynamic_cast<DFHack::SHMProcess*>(m_DF.getProcess());
+	if(test != NULL){
+		m_has_shm = true;
+	}
+	else{
+		QMessageBox::warning(0, tr("Warning"), tr("SDL.dll not installed properly\ncustom name and profession writing disabled\nTo enable please rename the original SDL.dll to SDLreal.dll and copy the DFhack SDL.dll into your Dwarf Fortress directory"));
+		m_has_shm = false;
+	}
+	m_mem = m_DF.getMemoryInfo();
+	m_DF.InitViewAndCursor();
+	m_DF.InitViewSize();
+	m_DF.InitMap(); // for getSize();
     
-    m_DF.InitReadCreatures(m_num_creatures);
-    m_DF.InitReadSettlements(m_num_settlements);
-    m_DF.ReadCreatureMatgloss(m_creaturestypes);
-    m_DF.ReadWoodMatgloss(m_woodstypes);
-    m_DF.ReadPlantMatgloss(m_plantstypes);
-    m_DF.ReadStoneMatgloss(m_stonestypes);
-    m_DF.ReadMetalMatgloss(m_metalstypes);
-    m_DF.ReadItemTypes(m_itemstypes);
-    m_DF.InitReadNameTables(m_english,m_foreign);
+	m_DF.InitReadCreatures(m_num_creatures);
+	m_DF.InitReadSettlements(m_num_settlements);
+	m_DF.ReadCreatureMatgloss(m_creaturestypes);
+	m_DF.ReadWoodMatgloss(m_woodstypes);
+	m_DF.ReadPlantMatgloss(m_plantstypes);
+	m_DF.ReadStoneMatgloss(m_stonestypes);
+	m_DF.ReadMetalMatgloss(m_metalstypes);
+	m_DF.ReadItemTypes(m_itemstypes);
+	m_DF.InitReadNameTables(m_english,m_foreign);
 
 	heartbeat(); // check if a fort is loaded
-	/*if(m_is_ok){
+	if(m_is_ok){
 		DFHack::t_settlement current;
 		m_DF.ReadCurrentSettlement(current);
-		m_generic_fort_name = QString(m_DF.TranslateName(current.name,2,m_names).c_str());
-		m_generic_fort_name = m_generic_fort_name.toLower();
-		m_generic_fort_name[0] = m_generic_fort_name[0].toTitleCase();
-		m_dwarf_fort_name = QString(m_DF.TranslateName(current.name,2,m_names,"DWARF").c_str());
-		m_dwarf_fort_name = m_dwarf_fort_name.toLower();
-		m_dwarf_fort_name[0] = m_dwarf_fort_name[0].toTitleCase();
-	}*/
-    }
+		m_generic_fort_name = QString(m_DF.TranslateName(current.name, m_english, m_foreign, true).c_str());
+		m_dwarf_fort_name = QString(m_DF.TranslateName(current.name, m_english, m_foreign, false).c_str());
+	}
+ 
 	connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 	// let subclasses start the timer, since we don't want to be checking before we're connected
 }

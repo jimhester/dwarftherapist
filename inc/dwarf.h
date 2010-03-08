@@ -238,6 +238,8 @@ public:
 	//! returns true if this dwarf can have labors specified on it
 	Q_INVOKABLE bool can_set_labors() {return m_can_set_labors;}
 
+	QString artifact_name() { return m_artifact_name;}
+
     /************************************************************************/
     /* SQUAD STUFF                                                          */
     /************************************************************************/
@@ -329,7 +331,7 @@ private:
 	QString m_nick_name, m_pending_nick_name;
 	QString m_nice_name, m_translated_name; // used to cache this value
 	QString m_custom_profession, m_pending_custom_profession;
-	QString m_profession;
+	QString m_profession, m_artifact_name;
 
 	bool m_can_set_labors;
 	int m_strength;
