@@ -50,7 +50,10 @@ QStandardItem *SkillColumn::build_cell(Dwarf *d) {
 	item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);
 	short rating = d->get_rating_by_skill(m_skill_id);
 	item->setData(rating, DwarfModel::DR_RATING);
-	item->setData(rating, DwarfModel::DR_SORT_VALUE);
+	uint exp = 0;
+	if (rating >= 0)
+		exp = d->get_skill(m_skill_id).actual_exp();
+	item->setData(exp, DwarfModel::DR_SORT_VALUE);
 
 	QString skill_str;
 	if (m_skill_id != -1 && rating > -1) {

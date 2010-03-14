@@ -46,30 +46,27 @@ public:
 
 	// accessors
 
-    DFHack::API * get_api(){return &m_DF;}
+    DFHack::API * getAPI(){return &m_DF;}
     DFHack::memory_info * getMem(){return m_mem;}
-    QString get_creature_type(uint type);
-    QString get_building_type(uint type);
-    QString get_stone_type(uint type);
-    QString get_medal_type(uint type);
-    QString get_item_type(uint type, uint index);
-    QString get_wood_type(uint type);
-    QString get_plant_type(uint type);
-    QString get_plant_drink_type(uint type);
-    QString get_plant_food_type(uint type);
-    QString get_plant_extract_type(uint type);
-    QString get_generic_fort_name(){return m_generic_fort_name;}
-    QString get_dwarf_fort_name(){return m_dwarf_fort_name;}
-    QString convert_string(const char *);
-    QString convert_string(const QString &);
+    QString getCreatureType(uint type);
+    QString getBuildingType(uint type);
+    QString getStoneType(uint type);
+    QString getMetalType(uint type);
+    QString getItemType(uint type, uint index);
+    QString getWoodType(uint type);
+    QString getPlantType(uint type);
+    QString getPlantDrinkType(uint type);
+    QString getPlantFoodType(uint type);
+    QString getPlantExtractType(uint type);
+    QString getGenericFortName(){return m_generic_fort_name;}
+    QString getDwarfFortName(){return m_dwarf_fort_name;}
+    QString convertString(const char *);
+    QString convertString(const QString &);
 
 	bool is_ok(){return m_is_ok;}
 	bool has_shm(){return m_has_shm;}
-    
-    uint get_num_creatures(){return m_num_creatures;}
 	
-    QString translate_name(const t_lastname &,string trans);
-    QString translate_name(const t_squadname &, string trans);
+    QString translateName(const t_name &,bool inEnglish);
 	
 	QVector<Dwarf*> load_dwarves();
 
@@ -85,7 +82,8 @@ private:
     vector<t_matgloss> m_woodstypes;
     vector< vector<t_itemType> > m_itemstypes;
 
-    map<string, vector<string> > m_names;
+    vector<vector<string>> m_english;
+	vector<vector<string>> m_foreign;
     int m_attach_count;
     QTimer *m_heartbeat_timer;
     DFHack::API m_DF;

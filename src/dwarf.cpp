@@ -76,76 +76,79 @@ Dwarf::~Dwarf() {
 }
 
 void Dwarf::refresh_data() {
-    if(m_index < m_df->get_num_creatures()){
-        m_df->get_api()->Suspend();
-        m_df->get_api()->ReadCreature(m_index, m_cre);
-        m_address = m_cre.origin;
-        m_dirty.D_LOCATION =  (m_x != m_cre.x || m_y != m_cre.y || m_z != m_cre.z);
-        
-        m_x = m_cre.x;
-        m_y = m_cre.y;
-        m_z = m_cre.z;
-        
-	    m_id = m_cre.id; 
-	    TRACE << "\tID:" << m_id;
-        char sex = m_cre.sex; 
-        m_is_male = (int)sex == 1;
-        TRACE << "\tMALE?" << m_is_male;
+ //   m_df->getAPI()->Suspend();
+    m_df->getAPI()->ReadCreature(m_index, m_cre);
+    m_address = m_cre.origin;
+    m_dirty.D_LOCATION =  (m_x != m_cre.x || m_y != m_cre.y || m_z != m_cre.z);
+    
+    m_x = m_cre.x;
+    m_y = m_cre.y;
+    m_z = m_cre.z;
+    
+	m_id = m_cre.id; 
+	TRACE << "\tID:" << m_id;
+    char sex = m_cre.sex; 
+    m_is_male = (int)sex == 1;
+    TRACE << "\tMALE?" << m_is_male;
 
-	    m_first_name = m_df->convert_string(m_cre.first_name); 
-	    if (m_first_name.size() > 1)
-		    m_first_name[0] = m_first_name[0].toUpper();
-	    TRACE << "\tFIRSTNAME:" << m_first_name;
-	    m_nick_name = m_df->convert_string(m_cre.nick_name);
-	    TRACE << "\tNICKNAME:" << m_nick_name;
-	    m_pending_nick_name = m_nick_name;
-	    m_last_name = m_df->convert_string(m_df->translate_name(m_cre.last_name,"DWARF"));
-	    TRACE << "\tLASTNAME:" << m_last_name;
-	    m_translated_last_name = m_df->convert_string(m_df->translate_name(m_cre.last_name,"GENERIC"));
-        calc_names();
+	m_first_name = m_df->convertString(m_cre.name.first_name); 
+	if (m_first_name.size() > 1)
+		m_first_name[0] = m_first_name[0].toUpper();
+	TRACE << "\tFIRSTNAME:" << m_first_name;
+	m_nick_name = m_df->convertString(m_cre.name.nickname);
+	TRACE << "\tNICKNAME:" << m_nick_name;
+	m_pending_nick_name = m_nick_name;
+	m_last_name = m_df->convertString(m_df->translateName(m_cre.name,false));
+	TRACE << "\tLASTNAME:" << m_last_name;
+	m_translated_last_name = m_df->convertString(m_df->translateName(m_cre.name,true));
+    calc_names();
 
-	    m_custom_profession = m_df->convert_string(m_cre.custom_profession); 
-	    TRACE << "\tCUSTOM PROF:" << m_custom_profession;
-	    m_pending_custom_profession = m_custom_profession;
-	    m_race_id = m_cre.type; 
-	    TRACE << "\tRACE ID:" << m_race_id;
-	    m_skills = read_skills();
-	    TRACE << "\tSKILLS: FOUND" << m_skills.size();
-	    m_profession = read_profession();
-	    TRACE << "\tPROFESSION:" << m_profession;
-	    m_strength = m_cre.strength; 
-	    TRACE << "\tSTRENGTH:" << m_strength;
-        m_toughness = m_cre.toughness; 
-	    TRACE << "\tTOUGHNESS:" << m_toughness;
-	    m_agility = m_cre.agility; 
-	    TRACE << "\tAGILITY:" << m_cre.agility; 
-        read_labors();
-	    read_traits();
-	    TRACE << "\tTRAITS:" << m_traits.size();
-	    m_money = m_cre.money; 
-	    TRACE << "\tMONEY:" << m_money;
-        m_dirty.D_LOCATION = m_raw_happiness != m_cre.happiness;
+	m_custom_profession = m_df->convertString(m_cre.custom_profession); 
+	TRACE << "\tCUSTOM PROF:" << m_custom_profession;
+	m_pending_custom_profession = m_custom_profession;
+	m_race_id = m_cre.type; 
+	TRACE << "\tRACE ID:" << m_race_id;
+	m_skills = read_skills();
+	TRACE << "\tSKILLS: FOUND" << m_skills.size();
+	m_profession = read_profession();
+	TRACE << "\tPROFESSION:" << m_profession;
+	m_strength = m_cre.strength; 
+	TRACE << "\tSTRENGTH:" << m_strength;
+    m_toughness = m_cre.toughness; 
+	TRACE << "\tTOUGHNESS:" << m_toughness;
+	m_agility = m_cre.agility; 
+	TRACE << "\tAGILITY:" << m_cre.agility; 
+    read_labors();
+	read_traits();
+	TRACE << "\tTRAITS:" << m_traits.size();
+	m_money = m_cre.money; 
+	TRACE << "\tMONEY:" << m_money;
+    m_dirty.D_LOCATION = m_raw_happiness != m_cre.happiness;
 
-	    m_raw_happiness = m_cre.happiness; 
-	    TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
-	    m_happiness = happiness_from_score(m_raw_happiness);
-	    TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
-        
-        read_likes();
-        read_current_job();
-        TRACE << "\tCURRENT JOB:" << m_current_job_id << m_current_job;
+	m_raw_happiness = m_cre.happiness; 
+	TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
+	m_happiness = happiness_from_score(m_raw_happiness);
+	TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
+    
+    read_likes();
+    read_current_job();
+    TRACE << "\tCURRENT JOB:" << m_current_job_id << m_current_job;
 
-        m_squad_leader_id = m_cre.squad_leader_id; 
-        TRACE << "\tSQUAD LEADER ID:" << m_squad_leader_id;
+    m_squad_leader_id = m_cre.squad_leader_id; 
+    TRACE << "\tSQUAD LEADER ID:" << m_squad_leader_id;
 
-        m_squad_name = m_df->convert_string(m_df->translate_name(m_cre.squad_name,"DWARF"));
-        TRACE << "\tSQUAD NAME:" << m_squad_name;
-        m_generic_squad_name = m_df->convert_string(m_df->translate_name(m_cre.squad_name,"GENERIC"));
-        TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
+    m_squad_name = m_df->convertString(m_df->translateName(m_cre.squad_name,false));
+    TRACE << "\tSQUAD NAME:" << m_squad_name;
+    m_generic_squad_name = m_df->convertString(m_df->translateName(m_cre.squad_name,true));
+    TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
 
-	    TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
-	    m_df->get_api()->Resume();
-    }
+	if(m_cre.flags1.bits.had_mood && (m_cre.mood == -1 || m_cre.mood == 8 ) ) //No idea what 8 is. But it's what DF checks!
+		m_artifact_name = m_df->convert_string(m_df->translateName(m_cre.artifact_name,false));
+	else
+		m_artifact_name = "";
+
+	TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
+//	m_df->getAPI()->Resume();
 }
 
 void Dwarf::read_settings() {

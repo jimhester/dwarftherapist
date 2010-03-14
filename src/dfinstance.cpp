@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "memorysegment.h"
 #include "dfhack/DFProcess.h"
-
+#include "dfhack/DFError.h"
 
 DFInstance::DFInstance(QObject* parent)
 	:QObject(parent)
@@ -41,6 +41,20 @@ DFInstance::DFInstance(QObject* parent)
     ,m_DF ("etc/Memory.xml")
 	,m_heartbeat_timer(new QTimer(this))
 {
+	try {
+		m_is_ok = m_DF.Attach();
+	} 
+	catch(DFHack::Error::NoProcess &e) 
+	{
+		QMessageBox::warning(0,tr("Error"),tr("Unable to locate a running copy of Dwarf Fortress"));
+		m_is_ok = false;
+		return;
+	} /*catch(DFHack::Error::CantAttach &e) {
+		QMessageBox::warning(0,tr("Error"),tr("Unable to attach to Dwarf Fortress"));
+		m_is_ok = false;
+		return;
+	}*/
+
     m_codec = new CP437Codec;
     try{
     m_DF.Attach();
@@ -74,7 +88,7 @@ DFInstance::DFInstance(QObject* parent)
         m_DF.ReadStoneMatgloss(m_stonestypes); 
         m_DF.ReadMetalMatgloss(m_metalstypes); 
         m_DF.ReadItemTypes(m_itemstypes); 
-        m_DF.InitReadNameTables(m_names);
+        m_DF.InitReadNameTables(m_english,m_foreign);
         heartbeat(); // check if a fort is loaded
         m_DF.Suspend();
 	    m_DF.ReadCurrentSettlement(current);
@@ -87,15 +101,9 @@ DFInstance::DFInstance(QObject* parent)
         return;
     }
 
-
-	    m_generic_fort_name = QString(m_DF.TranslateName(current.name,2,m_names).c_str());
-	    m_generic_fort_name = m_generic_fort_name.toLower();
-	    m_generic_fort_name[0] = m_generic_fort_name[0].toTitleCase();
-	    m_dwarf_fort_name = QString(m_DF.TranslateName(current.name,2,m_names,"DWARF").c_str());
-	    m_dwarf_fort_name = m_dwarf_fort_name.toLower();
-	    m_dwarf_fort_name[0] = m_dwarf_fort_name[0].toTitleCase();
+        m_generic_fort_name = QString(m_DF.TranslateName(current.name, m_english, m_foreign, true).c_str());
+		m_dwarf_fort_name = QString(m_DF.TranslateName(current.name, m_english, m_foreign, false).c_str());
         connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
-    
 }
 QString DFInstance::convert_string(const char * str){
     return m_codec->toUnicode(str,strlen(str));
@@ -149,18 +157,12 @@ void DFInstance::heartbeat() {
     }
 }
 
-QString DFInstance::translate_name(const t_lastname &name , string trans){
-    QString qname(m_DF.TranslateName(name, m_names,trans).c_str());
-    qname = qname.toLower();
-    qname[0]=qname[0].toUpper();
+QString DFInstance::translate_name(const t_name &name , bool in_english)
+{
+    QString qname(m_DF.TranslateName(name, m_english, m_foreign,in_english).c_str());
     return(qname);
 }
-QString DFInstance::translate_name(const t_squadname& name, string trans){
-    QString qname(m_DF.TranslateName(name, m_names,trans).c_str());
-    qname = qname.toLower();
-    qname[0]=qname[0].toUpper();
-    return(qname);
-}
+
 QString DFInstance::get_creature_type(uint type)
  {
    if(m_creaturestypes.size() > type)

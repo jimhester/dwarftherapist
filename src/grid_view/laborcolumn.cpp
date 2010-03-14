@@ -52,10 +52,12 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 
 	item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
 	short rating = d->get_rating_by_skill(m_skill_id);
-	if (rating < 0 && d->labor_enabled(m_labor_id)) {
-		item->setData(float(rating + 0.5f), DwarfModel::DR_SORT_VALUE); // push assigned labors above no exp in sort order
+	if(rating >=0) {
+		item->setData((int)d->get_skill(m_skill_id).actual_exp(), DwarfModel::DR_SORT_VALUE);
+	} else if (rating < 0 && d->labor_enabled(m_labor_id)) {
+		item->setData(-1, DwarfModel::DR_SORT_VALUE);
 	} else {
-		item->setData(rating, DwarfModel::DR_SORT_VALUE);		
+		item->setData(-2, DwarfModel::DR_SORT_VALUE);
 	}
 	item->setData(rating, DwarfModel::DR_RATING);
 	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);

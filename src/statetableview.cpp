@@ -68,7 +68,7 @@ StateTableView::StateTableView(QWidget *parent)
 	connect(this, SIGNAL(expanded(const QModelIndex &)), SLOT(index_expanded(const QModelIndex &)));
 	connect(this, SIGNAL(collapsed(const QModelIndex &)), SLOT(index_collapsed(const QModelIndex &)));
     connect(this, SIGNAL(clicked(const QModelIndex &)), SLOT(clicked(const QModelIndex &)));
-    connect(m_header, SIGNAL(sectionPressed(int)), this, SLOT(header_pressed(int)));
+	connect(m_header, SIGNAL(sectionPressed(int)), this, SLOT(header_pressed(int)));
 	connect(m_header, SIGNAL(sectionClicked(int)), this, SLOT(header_clicked(int)));
 }
 
@@ -352,6 +352,16 @@ void StateTableView::clicked(const QModelIndex &idx) {
         m_proxy && // we only do this for views that have proxies (dwarf views)
         idx.column() != 0) // don't single-click activate the name column
         m_proxy->cell_activated(idx);
+}
+
+void StateTableView::header_clicked(int index) {
+	if(!m_column_already_sorted && index > 0) {
+		m_header->setSortIndicator(index,Qt::DescendingOrder);
+	}
+}
+
+void StateTableView::header_pressed(int index) {
+	m_column_already_sorted = (m_header->sortIndicatorSection() == index);
 }
 
 /************************************************************************/

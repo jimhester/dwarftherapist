@@ -59,8 +59,13 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->lbl_translated_name->setText(QString("(%1)").arg(d->translated_name()));
     ui->lbl_profession->setText(d->profession());
     ui->lbl_current_job->setText(QString("%1 %2").arg(d->current_job_id()).arg(d->current_job()));
-
-    QMap<QProgressBar*, int> things;
+	ui->lbl_artifact->setText(QString("Creator of %1").arg(d->artifact_name()));
+	if(d->artifact_name().length() > 0)
+		ui->lbl_artifact->show();
+	else
+		ui->lbl_artifact->hide();
+	
+	QMap<QProgressBar*, int> things;
     int str = d->strength();
     int agi = d->agility();
     int tou = d->toughness();
