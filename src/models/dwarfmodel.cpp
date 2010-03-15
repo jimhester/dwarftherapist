@@ -119,6 +119,7 @@ void DwarfModel::load_dwarves() {
     }
 }
 void DwarfModel::refresh_dwarves(){
+    m_df->get_api()->Suspend();
     if(!Dwarf::can_read){
         Dwarf::can_read = true;
         return;
@@ -131,6 +132,7 @@ void DwarfModel::refresh_dwarves(){
         }
         d->refresh_data();
     }
+    m_df->get_api()->Resume();
 	foreach(ViewColumnSet *set, m_gridview->sets()) {
 		uint numCol = 0;
 		foreach(ViewColumn *col, set->columns()) {

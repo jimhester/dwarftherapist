@@ -125,6 +125,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 		return dwarves;
 	}
  	if (m_num_creatures > 0) {
+        m_DF.Suspend();
 		for (uint offset=0; offset < m_num_creatures; ++offset) {
 			Dwarf *d = Dwarf::get_dwarf(this, offset);
 			if (d) {
@@ -178,7 +179,7 @@ QString DFInstance::get_building_type(uint type){
     }
     return QString("");
 }
-QString DFInstance::get_medal_type(uint type){
+QString DFInstance::get_metal_type(uint type){
   if(m_metalstypes.size() > type)
     {
         return QString(m_metalstypes[type].name);

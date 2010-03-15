@@ -76,8 +76,11 @@ Dwarf::~Dwarf() {
 }
 
 void Dwarf::refresh_data() {
- //   m_df->getAPI()->Suspend();
-    m_df->getAPI()->ReadCreature(m_index, m_cre);
+    bool was_suspended = m_df->get_api()->isSuspended();
+    if(!was_suspended){
+       m_df->get_api()->Suspend();
+    }
+    m_df->get_api()->ReadCreature(m_index, m_cre);
     m_address = m_cre.origin;
     m_dirty.D_LOCATION =  (m_x != m_cre.x || m_y != m_cre.y || m_z != m_cre.z);
     
@@ -91,19 +94,19 @@ void Dwarf::refresh_data() {
     m_is_male = (int)sex == 1;
     TRACE << "\tMALE?" << m_is_male;
 
-	m_first_name = m_df->convertString(m_cre.name.first_name); 
+	m_first_name = m_df->convert_string(m_cre.name.first_name); 
 	if (m_first_name.size() > 1)
 		m_first_name[0] = m_first_name[0].toUpper();
 	TRACE << "\tFIRSTNAME:" << m_first_name;
-	m_nick_name = m_df->convertString(m_cre.name.nickname);
+	m_nick_name = m_df->convert_string(m_cre.name.nickname);
 	TRACE << "\tNICKNAME:" << m_nick_name;
 	m_pending_nick_name = m_nick_name;
-	m_last_name = m_df->convertString(m_df->translateName(m_cre.name,false));
+	m_last_name = m_df->convert_string(m_df->translate_name(m_cre.name,false));
 	TRACE << "\tLASTNAME:" << m_last_name;
-	m_translated_last_name = m_df->convertString(m_df->translateName(m_cre.name,true));
+	m_translated_last_name = m_df->convert_string(m_df->translate_name(m_cre.name,true));
     calc_names();
 
-	m_custom_profession = m_df->convertString(m_cre.custom_profession); 
+	m_custom_profession = m_df->convert_string(m_cre.custom_profession); 
 	TRACE << "\tCUSTOM PROF:" << m_custom_profession;
 	m_pending_custom_profession = m_custom_profession;
 	m_race_id = m_cre.type; 
@@ -137,18 +140,20 @@ void Dwarf::refresh_data() {
     m_squad_leader_id = m_cre.squad_leader_id; 
     TRACE << "\tSQUAD LEADER ID:" << m_squad_leader_id;
 
-    m_squad_name = m_df->convertString(m_df->translateName(m_cre.squad_name,false));
+    m_squad_name = m_df->convert_string(m_df->translate_name(m_cre.squad_name,false));
     TRACE << "\tSQUAD NAME:" << m_squad_name;
-    m_generic_squad_name = m_df->convertString(m_df->translateName(m_cre.squad_name,true));
+    m_generic_squad_name = m_df->convert_string(m_df->translate_name(m_cre.squad_name,true));
     TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
 
 	if(m_cre.flags1.bits.had_mood && (m_cre.mood == -1 || m_cre.mood == 8 ) ) //No idea what 8 is. But it's what DF checks!
-		m_artifact_name = m_df->convert_string(m_df->translateName(m_cre.artifact_name,false));
+		m_artifact_name = m_df->convert_string(m_df->translate_name(m_cre.artifact_name,false));
 	else
 		m_artifact_name = "";
 
 	TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
-//	m_df->getAPI()->Resume();
+    if(!was_suspended){
+    	m_df->get_api()->Resume();
+    }
 }
 
 void Dwarf::read_settings() {
@@ -660,7 +665,7 @@ Dwarf::LIKETYPE Dwarf::getLikeName(DFHack::t_like & like, QString & retLike){ //
                 retLike = m_df->get_stone_type(like.material.index);
                 return(MATERIAL);
             case 2:
-                retLike = m_df->get_medal_type(like.material.index);           
+                retLike = m_df->get_metal_type(like.material.index);           
                 return(MATERIAL);
             case 12: // don't ask me why this has such a large jump, maybe this is not actually the matType for plants, but they all have this set to 12
                 retLike = m_df->get_plant_type(like.material.index);
@@ -794,7 +799,11 @@ bool Dwarf::is_ok(){
 void Dwarf::move_view_to(){
     int width, height;
     DFHack::API *DF = m_df->get_api();
-    DF->Suspend();
+    bool was_suspended = m_df->get_api()->isSuspended();
+    if(!was_suspended){
+       DF->Suspend();
+    }
+    refresh_data(); // get current position of dwarf
     DF->getWindowSize(width,height);
     uint mapx,mapy,mapz;
     DF->getSize(mapx,mapy,mapz);
@@ -816,7 +825,9 @@ void Dwarf::move_view_to(){
     }
     zoom_z = (std::min)(m_z,mapz);
     DF->setViewCoords(zoom_x,zoom_y,zoom_z);
-    DF->Resume();
+    if(!was_suspended){
+     DF->Resume();
+    }
 }
 
 /************************************************************************/

@@ -401,12 +401,3 @@ void StateTableView::restore_expanded_items() {
 	}
 	connect(this, SIGNAL(expanded(const QModelIndex &)), SLOT(index_expanded(const QModelIndex &)));
 }
-void StateTableView::header_clicked(int index) {
-	if(!m_column_already_sorted && index > 0 ) {
-		m_header->setSortIndicator(index,Qt::DescendingOrder);
-	}
-}
-
-void StateTableView::header_pressed(int index) {
-	m_column_already_sorted = (m_header->sortIndicatorSection() == index  );
-}

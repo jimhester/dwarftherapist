@@ -184,12 +184,14 @@ namespace DFHack
         class DFHACK_EXPORT MemoryXmlUnderspecifiedEntry : public std::exception
         {
         public:
-            MemoryXmlUnderspecifiedEntry() {}
+            MemoryXmlUnderspecifiedEntry(const char * _where) : where(_where) {}
             virtual ~MemoryXmlUnderspecifiedEntry() throw(){};
-
+            std::string where;
             virtual const char* what() const throw()
             {
-                return "underspecified MemInfo entry, each entry needs to set both the name attribute and have a value";
+                std::stringstream s;
+                s << "underspecified MemInfo entry, each entry needs to set both the name attribute and have a value. parent: " << where;
+                return s.str().c_str();
             }
         };
 
@@ -208,6 +210,72 @@ namespace DFHack
                 return s.str().c_str();
             }
         };
+        
+        class DFHACK_EXPORT SHMServerDisappeared : public std::exception
+        {
+        public:
+            SHMServerDisappeared(){}
+            virtual ~SHMServerDisappeared() throw(){};
+            virtual const char* what() const throw()
+            {
+                return "The server process has disappeared";
+            }
+        };
+        class DFHACK_EXPORT SHMLockingError : public std::exception
+        {
+        public:
+            SHMLockingError(const char* _type) : type(_type) {}
+            virtual ~SHMLockingError() throw(){};
+            
+            std::string type;
+            
+            virtual const char* what() const throw()
+            {
+                std::stringstream s;
+                s << "SHM locking error: " << type;
+                return s.str().c_str();
+            }
+        };
+        class DFHACK_EXPORT SHMAccessDenied : public std::exception
+        {
+        public:
+            SHMAccessDenied() {}
+            virtual ~SHMAccessDenied() throw(){};
+            
+            std::string type;
+            
+            virtual const char* what() const throw()
+            {
+                return "SHM ACCESS DENIED";
+            }
+        };
+        class DFHACK_EXPORT SHMVersionMismatch : public std::exception
+        {
+        public:
+            SHMVersionMismatch() {}
+            virtual ~SHMVersionMismatch() throw(){};
+            
+            std::string type;
+            
+            virtual const char* what() const throw()
+            {
+                return "SHM VERSION MISMATCH";
+            }
+        };
+        class DFHACK_EXPORT SHMAttachFailure : public std::exception
+        {
+        public:
+            SHMAttachFailure() {}
+            virtual ~SHMAttachFailure() throw(){};
+            
+            std::string type;
+            
+            virtual const char* what() const throw()
+            {
+                return "SHM ATTACH FAILURE";
+            }
+        };
+        
     }
 }
 
