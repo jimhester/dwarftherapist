@@ -1,3 +1,10 @@
+RELEASE DFhack 0.1.1 (March 16, 2010)
+ 
+ * Incorporates the new addresses for all released linux versions as well as windows versions all the way back to 39a
+ * Fixed Suspend/Resume issues which caused the speed to be slow, especially when using the shm on linux, it now only suspends once per refresh for all the dwarves, not for each creature
+ * Zhentar - Added Artifact names to the detail screen if a dwarf created the artifact
+ * Zhentar also did a bunch of work on figuring out the name structure in DF, so big kudos to him
+
 RELEASE DFhack 0.1.0 (March 03, 2010)
 CHANGES SINCE 0.0.5
 

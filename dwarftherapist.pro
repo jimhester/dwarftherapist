@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = DwarfTherapist
-CONFIG += debug debug_and_release
+CONFIG += release
 CONFIG:debug:DESTDIR = ./bin/debug
 CONFIG:release:DESTDIR = ./bin/release
 QT += network

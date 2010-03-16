@@ -518,6 +518,10 @@ bool Dwarf::commit_pending() {
 /*	MemoryLayout *mem = m_df->memory_layout();
 	int addr = m_address + mem->dwarf_offset("labors");
 */
+    bool was_suspended = m_df->get_api()->isSuspended();
+    if(!was_suspended){
+       m_df->get_api()->Suspend();
+    }
     uint8_t buf[NUM_CREATURE_LABORS] = {0};
     for(int i = 0;i<NUM_CREATURE_LABORS;i++){
         buf[i] = m_cre.labors[i];
@@ -537,6 +541,9 @@ bool Dwarf::commit_pending() {
 	if (m_pending_custom_profession != m_custom_profession)
 	  success = write_string(m_pending_custom_profession,false);
 	refresh_data();
+    if(!was_suspended){
+       m_df->get_api()->Resume();
+    }
     return success;
 }
 
@@ -544,11 +551,21 @@ bool Dwarf::write_string(const QString &changeString,bool isName){ // if not nam
 
     DFHack::Process* p = m_df->get_api()->getProcess();
     DFHack::memory_info* mem = m_df->getMem();
+    bool was_suspended = p->isSuspended();
+    if(!was_suspended){
+      m_df->get_api()->Suspend();
+    }
     if(isName){
-        p->writeSTLString(m_cre.origin+mem->getOffset("creature_nick_name"),changeString.toStdString());
+        p->writeSTLString(m_cre.origin+mem->getOffset("name_nickname"),changeString.toStdString());
+    if(!was_suspended){
+      m_df->get_api()->Resume();
+    }
         return(true);
     }
     p->writeSTLString(m_cre.origin+mem->getOffset("creature_custom_profession"),changeString.toStdString());
+    if(!was_suspended){
+      m_df->get_api()->Resume();
+    }
     return(true);
 }
 
@@ -729,7 +746,7 @@ Dwarf::LIKETYPE Dwarf::getLikeName(DFHack::t_like & like, QString & retLike){ //
                     retLike = m_df->get_plant_type(like.material.type);
                     return(FOOD);
                 case 72:
-                    if(like.material.type =! 10){ // 10 is for milk stuff, which I don't know how to do
+                    if(like.material.type != 10){ // 10 is for milk stuff, which I don't know how to do
                         retLike = m_df->get_plant_extract_type(like.material.index);
                         return(FOOD);
                     }

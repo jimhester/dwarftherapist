@@ -86,9 +86,11 @@ void DwarfModel::load_dwarves() {
 		removeRows(0, rowCount());
 
 //	m_df->attach();
+	m_df->get_api()->Suspend();
 	foreach(Dwarf *d, m_df->load_dwarves()) {
 		m_dwarves[d->id()] = d;
 	}
+	m_df->get_api()->Resume();
 	//m_df->detach();
 	/*! Let's try to guess the wave a dwarf arrived in based on ID.
 	The game appears to assign ids to creates in a serial manner.
@@ -435,7 +437,7 @@ void DwarfModel::clear_pending() {
 
 void DwarfModel::commit_pending() {
     bool success = true;
-
+    
 	foreach(Dwarf *d, m_dwarves) {
         qApp->processEvents();
 		if (d->pending_changes()) {
