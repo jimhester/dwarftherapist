@@ -86,7 +86,7 @@ DFInstance::DFInstance(QObject* parent)
 		DFHack::t_settlement current;
 		m_DF.ReadCurrentSettlement(current);
 		m_generic_fort_name = QString(m_DF.TranslateName(current.name, m_english, m_foreign, true).c_str());
-		m_dwarf_fort_name = QString(m_DF.TranslateName(current.name, m_english, m_foreign, false).c_str());
+		m_dwarf_fort_name = convertString(QString(m_DF.TranslateName(current.name, m_english, m_foreign, false).c_str()));
 	}
  
 	connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
