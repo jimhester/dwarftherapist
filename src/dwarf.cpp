@@ -76,20 +76,21 @@ Dwarf::~Dwarf() {
 }
 
 void Dwarf::refresh_data() {
-    m_df->getAPI()->Suspend();
-    m_df->getAPI()->ReadCreature(m_index, m_cre);
-    m_address = m_cre.origin;
-    m_dirty.D_LOCATION =  (m_x != m_cre.x || m_y != m_cre.y || m_z != m_cre.z);
-    
-    m_x = m_cre.x;
-    m_y = m_cre.y;
-    m_z = m_cre.z;
-    
-	m_id = m_cre.id; 
-	TRACE << "\tID:" << m_id;
-    char sex = m_cre.sex; 
-    m_is_male = (int)sex == 1;
-    TRACE << "\tMALE?" << m_is_male;
+    if(m_index < m_df->get_num_creatures()){
+        m_df->get_api()->Suspend();
+        m_df->get_api()->ReadCreature(m_index, m_cre);
+        m_address = m_cre.origin;
+        m_dirty.D_LOCATION =  (m_x != m_cre.x || m_y != m_cre.y || m_z != m_cre.z);
+        
+        m_x = m_cre.x;
+        m_y = m_cre.y;
+        m_z = m_cre.z;
+        
+	    m_id = m_cre.id; 
+	    TRACE << "\tID:" << m_id;
+        char sex = m_cre.sex; 
+        m_is_male = (int)sex == 1;
+        TRACE << "\tMALE?" << m_is_male;
 
 	m_first_name = m_df->convertString(m_cre.name.first_name); 
 	if (m_first_name.size() > 1)
@@ -98,48 +99,48 @@ void Dwarf::refresh_data() {
 	m_nick_name = m_df->convertString(m_cre.name.nickname);
 	TRACE << "\tNICKNAME:" << m_nick_name;
 	m_pending_nick_name = m_nick_name;
-	m_last_name = m_df->convertString(m_df->translateName(m_cre.name,false));
+	m_last_name = m_df->convertString(m_df->translate_name(m_cre.name,false));
 	TRACE << "\tLASTNAME:" << m_last_name;
-	m_translated_last_name = m_df->convertString(m_df->translateName(m_cre.name,true));
+	m_translated_last_name = m_df->convertString(m_df->translate_name(m_cre.name,true));
     calc_names();
 
-	m_custom_profession = m_df->convertString(m_cre.custom_profession); 
-	TRACE << "\tCUSTOM PROF:" << m_custom_profession;
-	m_pending_custom_profession = m_custom_profession;
-	m_race_id = m_cre.type; 
-	TRACE << "\tRACE ID:" << m_race_id;
-	m_skills = read_skills();
-	TRACE << "\tSKILLS: FOUND" << m_skills.size();
-	m_profession = read_profession();
-	TRACE << "\tPROFESSION:" << m_profession;
-	m_strength = m_cre.strength; 
-	TRACE << "\tSTRENGTH:" << m_strength;
-    m_toughness = m_cre.toughness; 
-	TRACE << "\tTOUGHNESS:" << m_toughness;
-	m_agility = m_cre.agility; 
-	TRACE << "\tAGILITY:" << m_cre.agility; 
-    read_labors();
-	read_traits();
-	TRACE << "\tTRAITS:" << m_traits.size();
-	m_money = m_cre.money; 
-	TRACE << "\tMONEY:" << m_money;
-    m_dirty.D_LOCATION = m_raw_happiness != m_cre.happiness;
+	    m_custom_profession = m_df->convert_string(m_cre.custom_profession); 
+	    TRACE << "\tCUSTOM PROF:" << m_custom_profession;
+	    m_pending_custom_profession = m_custom_profession;
+	    m_race_id = m_cre.type; 
+	    TRACE << "\tRACE ID:" << m_race_id;
+	    m_skills = read_skills();
+	    TRACE << "\tSKILLS: FOUND" << m_skills.size();
+	    m_profession = read_profession();
+	    TRACE << "\tPROFESSION:" << m_profession;
+	    m_strength = m_cre.strength; 
+	    TRACE << "\tSTRENGTH:" << m_strength;
+        m_toughness = m_cre.toughness; 
+	    TRACE << "\tTOUGHNESS:" << m_toughness;
+	    m_agility = m_cre.agility; 
+	    TRACE << "\tAGILITY:" << m_cre.agility; 
+        read_labors();
+	    read_traits();
+	    TRACE << "\tTRAITS:" << m_traits.size();
+	    m_money = m_cre.money; 
+	    TRACE << "\tMONEY:" << m_money;
+        m_dirty.D_LOCATION = m_raw_happiness != m_cre.happiness;
 
-	m_raw_happiness = m_cre.happiness; 
-	TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
-	m_happiness = happiness_from_score(m_raw_happiness);
-	TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
-    
-    read_likes();
-    read_current_job();
-    TRACE << "\tCURRENT JOB:" << m_current_job_id << m_current_job;
+	    m_raw_happiness = m_cre.happiness; 
+	    TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
+	    m_happiness = happiness_from_score(m_raw_happiness);
+	    TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
+        
+        read_likes();
+        read_current_job();
+        TRACE << "\tCURRENT JOB:" << m_current_job_id << m_current_job;
 
-    m_squad_leader_id = m_cre.squad_leader_id; 
-    TRACE << "\tSQUAD LEADER ID:" << m_squad_leader_id;
+        m_squad_leader_id = m_cre.squad_leader_id; 
+        TRACE << "\tSQUAD LEADER ID:" << m_squad_leader_id;
 
-    m_squad_name = m_df->convertString(m_df->translateName(m_cre.squad_name,false));
+    m_squad_name = m_df->convertString(m_df->translate_name(m_cre.squad_name,false));
     TRACE << "\tSQUAD NAME:" << m_squad_name;
-    m_generic_squad_name = m_df->convertString(m_df->translateName(m_cre.squad_name,true));
+    m_generic_squad_name = m_df->convertString(m_df->translate_name(m_cre.squad_name,true));
     TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
 
 	if(m_cre.flags1.bits.had_mood && (m_cre.mood == 0xFFFF || m_cre.mood == 8 ) ) //No idea what 8 is. But it's what DF checks!
@@ -147,10 +148,9 @@ void Dwarf::refresh_data() {
 	else
 		m_artifact_name = "";
 
-	TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
-
-
-	m_df->getAPI()->Resume();
+	    TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
+	    m_df->get_api()->Resume();
+    }
 }
 
 void Dwarf::read_settings() {
@@ -231,7 +231,7 @@ Dwarf * Dwarf::get_dwarf(DFInstance *df, const uint &index) {
 	//  TRACE << "attempting to load dwarf at" << addr << "using memory layout" << mem->game_version();
 
     Dwarf *unverified_dwarf = new Dwarf(df,index);
-    if (df->getCreatureType(unverified_dwarf->m_cre.type) != "dwarf") { // we only care about dwarfs
+    if (df->get_creature_type(unverified_dwarf->m_cre.type) != "dwarf") { // we only care about dwarfs
         TRACE << "Ignoring non-dwarf creature with racial ID of " << hexify(unverified_dwarf->m_cre.type);
         return 0;
     }
@@ -508,7 +508,7 @@ int Dwarf::pending_changes() {
 }
 
 void Dwarf::clear_pending() {
-	refresh_data();
+	//refresh_data(); FIXME
 }
 
 bool Dwarf::commit_pending() {
@@ -526,8 +526,8 @@ bool Dwarf::commit_pending() {
 		// change values to what's pending
 		buf[labor_id] = m_pending_labors.value(labor_id);
 	}
-//	m_df->getAPI()->Suspend();
-    m_df->getAPI()->WriteLabors(m_index,buf);
+//	m_df->get_api()->Suspend();
+    m_df->get_api()->WriteLabors(m_index,buf);
     bool success = true;
 	if (m_pending_nick_name != m_nick_name)
         success = write_string(m_pending_nick_name,true);
@@ -539,7 +539,7 @@ bool Dwarf::commit_pending() {
 
 bool Dwarf::write_string(const QString &changeString,bool isName){ // if not name, has to be profession
 
-    DFHack::Process* p = m_df->getAPI()->getProcess();
+    DFHack::Process* p = m_df->get_api()->getProcess();
     DFHack::memory_info* mem = m_df->getMem();
     if(isName){
         p->writeSTLString(m_cre.origin+mem->getOffset("creature_nick_name"),changeString.toStdString());
@@ -647,8 +647,7 @@ QString Dwarf::tooltip_text() {
 		.arg(trait_summary);
 }
 
-Dwarf::LIKETYPE Dwarf::getLikeName(DFHack::t_like & like, QString & retLike)
-{ // The function in DF which prints out the likes is a monster, it is a huge switch statement with tons of options and calls a ton of other functions as well, 
+Dwarf::LIKETYPE Dwarf::getLikeName(DFHack::t_like & like, QString & retLike){ // The function in DF which prints out the likes is a monster, it is a huge switch statement with tons of options and calls a ton of other functions as well, 
     //so I am not going to try and put all the possibilites here, only the low hanging fruit, with stones and metals, as well as items,
     //you can easily find good canidates for military duty for instance
     //The ideal thing to do would be to call the df function directly with the desired likes, the df function modifies a string, so it should be possible to do...
@@ -657,22 +656,22 @@ Dwarf::LIKETYPE Dwarf::getLikeName(DFHack::t_like & like, QString & retLike)
             switch (like.material.type)
             {
             case 0:
-                retLike = m_df->getWoodType(like.material.index);
+                retLike = m_df->get_wood_type(like.material.index);
                 return(MATERIAL);
             case 1:
-                retLike = m_df->getStoneType(like.material.index);
+                retLike = m_df->get_stone_type(like.material.index);
                 return(MATERIAL);
             case 2:
-                retLike = m_df->getMetalType(like.material.index);           
+                retLike = m_df->get_medal_type(like.material.index);           
                 return(MATERIAL);
             case 12: // don't ask me why this has such a large jump, maybe this is not actually the matType for plants, but they all have this set to 12
-                retLike = m_df->getPlantType(like.material.index);
+                retLike = m_df->get_plant_type(like.material.index);
                 return(MATERIAL);
             case 32:
-                retLike = m_df->getPlantType(like.material.index);
+                retLike = m_df->get_plant_type(like.material.index);
                 return(MATERIAL);
             case 121:
-                retLike = m_df->getCreatureType(like.material.index);
+                retLike = m_df->get_creature_type(like.material.index);
                 return(MATERIAL);
             default:
                 return(FAIL);
@@ -682,35 +681,35 @@ Dwarf::LIKETYPE Dwarf::getLikeName(DFHack::t_like & like, QString & retLike)
             switch(like.itemClass)
             {
             case 24:
-                retLike = m_df->getItemType(0,like.itemIndex);
+                retLike = m_df->get_item_type(0,like.itemIndex);
                 return(ITEM);
             case 25:
-                retLike = m_df->getItemType(4,like.itemIndex);
+                retLike = m_df->get_item_type(4,like.itemIndex);
                 return(ITEM);
             case 26:
-                retLike = m_df->getItemType(8,like.itemIndex);
+                retLike = m_df->get_item_type(8,like.itemIndex);
                 return(ITEM);
             case 27:
-                retLike = m_df->getItemType(9,like.itemIndex);
+                retLike = m_df->get_item_type(9,like.itemIndex);
                 return(ITEM);
             case 28:
-                retLike = m_df->getItemType(10,like.itemIndex);
+                retLike = m_df->get_item_type(10,like.itemIndex);
                 return(ITEM);
             case 29:
-                retLike = m_df->getItemType(7,like.itemIndex);
+                retLike = m_df->get_item_type(7,like.itemIndex);
                 return(ITEM);
             case 38:
-                retLike = m_df->getItemType(5,like.itemIndex);
+                retLike = m_df->get_item_type(5,like.itemIndex);
                 return(ITEM);
             case 63:
-                retLike = m_df->getItemType(11,like.itemIndex);
+                retLike = m_df->get_item_type(11,like.itemIndex);
                 return(ITEM);
             case 68:
             case 69:
-                retLike = m_df->getItemType(6,like.itemIndex);
+                retLike = m_df->get_item_type(6,like.itemIndex);
                 return(ITEM);
             case 70:
-                retLike = m_df->getItemType(1,like.itemIndex);
+                retLike = m_df->get_item_type(1,like.itemIndex);
                 return(ITEM);
             default:
                 //retLike = QString(like.itemClass << ":" << like.itemIndex;
@@ -724,23 +723,23 @@ Dwarf::LIKETYPE Dwarf::getLikeName(DFHack::t_like & like, QString & retLike)
                 case 52:
                 case 53:
                 case 58:
-                    retLike = m_df->getPlantType(like.material.type);
+                    retLike = m_df->get_plant_type(like.material.type);
                     return(FOOD);
                 case 72:
                     if(like.material.type =! 10){ // 10 is for milk stuff, which I don't know how to do
-                        retLike = m_df->getPlantExtractType(like.material.index);
+                        retLike = m_df->get_plant_extract_type(like.material.index);
                         return(FOOD);
                     }
                     return(FAIL);
                 case 74:
-                    retLike = m_df->getPlantDrinkType(like.material.index);
+                    retLike = m_df->get_plant_drink_type(like.material.index);
                     return(FOOD);
                 case 75:
-                    retLike = m_df->getPlantFoodType(like.material.index);
+                    retLike = m_df->get_plant_food_type(like.material.index);
                     return(FOOD);
                 case 47:
                 case 48:
-                    retLike = m_df->getCreatureType(like.material.type);
+                    retLike = m_df->get_creature_type(like.material.type);
                     return(FOOD);
                 default:
                     return(FAIL);
@@ -751,8 +750,7 @@ Dwarf::LIKETYPE Dwarf::getLikeName(DFHack::t_like & like, QString & retLike)
     return(FAIL);
 }
 
-void Dwarf::read_likes()
-{
+void Dwarf::read_likes(){
     m_likes[0].clear();
     m_likes[1].clear();
     m_likes[2].clear();
@@ -765,8 +763,7 @@ void Dwarf::read_likes()
     }
 }
 
-bool Dwarf::has_like(QString like)
-{
+bool Dwarf::has_like(QString like){
     QRegExp regex(like,Qt::CaseInsensitive,QRegExp::Wildcard); // only do wildcard matching
     for(int i = 0; i < 3;i++){
         for(int j = 0;j<m_likes[i].size();j++){
@@ -777,8 +774,7 @@ bool Dwarf::has_like(QString like)
     }
     return false;
 }   
-/*bool Dwarf::hasLikeRegex(QString like)
-{
+/*bool Dwarf::hasLikeRegex(QString like){
     QRegExp regex(like,Qt::CaseInsensitive,QRegExp::RegExp); // use perl like regex
     for(int i = 0; i < 3;i++){
         for(int j = 0;j<m_likes[i].size();j++){
@@ -793,9 +789,13 @@ void Dwarf::show_details() {
 	DT->get_main_window()->show_dwarf_details_dock(this);
 }
 
+bool Dwarf::is_ok(){
+    return !(m_df == 0 || m_id > m_df->get_num_creatures() || m_raw_profession == -1);
+}
+
 void Dwarf::move_view_to(){
     int width, height;
-    DFHack::API *DF = m_df->getAPI();
+    DFHack::API *DF = m_df->get_api();
     DF->Suspend();
     DF->getWindowSize(width,height);
     uint mapx,mapy,mapz;
@@ -845,3 +845,5 @@ void Dwarf::add_squad_member(Dwarf *d) {
     if (d && !m_squad_members.contains(d))
         m_squad_members << d;
 }
+
+bool Dwarf::can_read = true;

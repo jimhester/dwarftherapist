@@ -38,6 +38,19 @@ DwarfDetailsDock::DwarfDetailsDock(QWidget *parent, Qt::WindowFlags flags)
 	setWidget(l);
 }
 
+void DwarfDetailsDock::reset()
+{   
+    m_initialized = false;
+    m_widget->stop_refresh();
+    m_widget->hide();
+    //m_widget->close();
+    //delete m_widget;
+    QLabel *l = new QLabel(tr("Click on a dwarf name to show details here"), this);
+	l->setAlignment(Qt::AlignCenter);
+	setWidget(l);
+}
+
+
 void DwarfDetailsDock::closeEvent(QCloseEvent *event)
 {
 	m_widget->stop_refresh();

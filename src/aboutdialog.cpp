@@ -50,5 +50,5 @@ void AboutDialog::version_check_failed() {
 }
 
 void AboutDialog::check_version() {
-    DT->get_main_window()->check_latest_version(true);
+ //   DT->get_main_window()->check_latest_version(true);
 }

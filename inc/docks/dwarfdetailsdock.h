@@ -33,6 +33,7 @@ class DwarfDetailsDock : public QDockWidget {
 public:
 	DwarfDetailsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 	void closeEvent(QCloseEvent *event);
+    void reset();
 	public slots:
         void show_dwarf(Dwarf *d);
 

@@ -58,9 +58,15 @@ void DwarfModel::clear_all() {
 	clear_pending();
 	foreach(Dwarf *d, m_dwarves) {
 		delete d;
+        d=0;
 	}
 	m_dwarves.clear();
 	m_grouped_dwarves.clear();
+    foreach(ViewColumnSet *set, m_gridview->sets()) {
+        foreach(ViewColumn *col, set->columns()) {
+            col->clear_cells();
+        }
+    }
 	clear();
 }
 
@@ -75,10 +81,7 @@ void DwarfModel::section_right_clicked(int col) {
 
 void DwarfModel::load_dwarves() {
 	// clear id->dwarf map
-	foreach(Dwarf *d, m_dwarves) {
-		delete d;
-	}
-	m_dwarves.clear();
+	clear_all();
 	if (rowCount())
 		removeRows(0, rowCount());
 
@@ -116,8 +119,16 @@ void DwarfModel::load_dwarves() {
     }
 }
 void DwarfModel::refresh_dwarves(){
+    if(!Dwarf::can_read){
+        Dwarf::can_read = true;
+        return;
+    }
 	foreach(Dwarf *d, m_dwarves) {
         qApp->processEvents();
+        if(!Dwarf::can_read){
+            Dwarf::can_read = true;
+            return;
+        }
         d->refresh_data();
     }
 	foreach(ViewColumnSet *set, m_gridview->sets()) {

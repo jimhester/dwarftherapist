@@ -32,8 +32,7 @@ THE SOFTWARE.
 
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
 	:QSortFilterProxyModel(parent)
-    , m_engine(new QScriptEngine(this))
-{}
+    , m_engine(new QScriptEngine(this)){}
 
 DwarfModel* DwarfModelProxy::get_dwarf_model() const {
 	return static_cast<DwarfModel*>(sourceModel());

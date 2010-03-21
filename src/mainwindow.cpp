@@ -81,7 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
 	, m_temp_cp(0)
     , m_dwarf_name_completer(0)
 {
-    m_refreshTimer = new QTimer(this);
+    m_refresh_timer = new QTimer(this);
     
 	ui->setupUi(this);
 	m_view_manager = new ViewManager(m_model, m_proxy, this);
@@ -113,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
 	LOGD << "setting up connections for MainWindow";
-    connect(m_refreshTimer, SIGNAL(timeout()),this,SLOT(refresh_dwarves()));
+    connect(m_refresh_timer, SIGNAL(timeout()),this,SLOT(refresh_dwarves()));
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
@@ -156,15 +156,16 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() {
+    delete m_refresh_timer;
 	delete ui;
 }
 
 void MainWindow::set_refresh(){
-    if(m_refreshTimer->timerId() == -1){
-        m_refreshTimer->start(2000);
+    if(m_refresh_timer->timerId() == -1){
+        m_refresh_timer->start(2000);
     }
     else{
-        m_refreshTimer->stop();
+        m_refresh_timer->stop();
     }
 }
 
@@ -231,7 +232,7 @@ void MainWindow::connect_to_df() {
 	// logging and notifying the user.
     m_df = new DFInstance();
     if (m_df && m_df->is_ok() && m_df->find_running_copy()) {
-        this->setWindowTitle("Dwarf Therapist - " + m_df->getDwarfFortName() + ", \"" + m_df->getGenericFortName() + "\"");
+        this->setWindowTitle("Dwarf Therapist - " + m_df->get_dwarf_fort_name() + ", \"" + m_df->get_generic_fort_name() + "\"");
         m_lbl_status->setText(tr("Connected to ") + QString(m_df->getMem()->getVersion().c_str()));
 		connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
 		set_interface_enabled(true);
@@ -255,7 +256,7 @@ void MainWindow::lost_df_connection() {
 }
 //this just refreshes the dwarf data, does not reorder anything
 void MainWindow::refresh_dwarves() {
-	if (!m_df || !m_df->is_ok()) {
+    if (!m_df || !m_df->is_ok()) {
         lost_df_connection();
 		return;
 	}
@@ -263,7 +264,7 @@ void MainWindow::refresh_dwarves() {
         lost_df_connection();
         return;
     }
-	m_model->refresh_dwarves();
+    m_model->refresh_dwarves();
 }
 
 void MainWindow::read_dwarves() {
@@ -271,23 +272,26 @@ void MainWindow::read_dwarves() {
         lost_df_connection();
 		return;
 	}
-
+    Dwarf::can_read = false;
     QScrollBar * v_bar = m_view_manager->get_stv()->verticalScrollBar();
     QScrollBar * h_bar = m_view_manager->get_stv()->horizontalScrollBar();
     int oldVVal = v_bar->value();
     int oldHVal = h_bar->value();
-	m_model->set_instance(m_df);
-	m_model->load_dwarves();
+    DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dwarfdetailsdock"));
+    dock->reset();
+    m_model->clear_all();
+    m_model->set_instance(m_df);
+    m_model->load_dwarves();
 
     if (m_model->get_dwarves().size() < 1) {
         lost_df_connection();
         return;
     }
 
-	new_pending_changes(0);
-	// cheap trick to setup the view correctly
-	m_view_manager->redraw_current_tab();
-	ui->lbl_dwarf_total->setText(QString::number(m_model->get_dwarves().size()));
+    new_pending_changes(0);
+    // cheap trick to setup the view correctly
+    m_view_manager->redraw_current_tab();
+    ui->lbl_dwarf_total->setText(QString::number(m_model->get_dwarves().size()));
 
     // setup the filter auto-completer
     m_dwarf_names_list.clear();
@@ -314,7 +318,7 @@ void MainWindow::set_interface_enabled(bool enabled) {
 	ui->act_import_existing_professions->setEnabled(enabled);
 }
 
-void MainWindow::check_latest_version(bool show_result_on_equal) {
+/*void MainWindow::check_latest_version(bool show_result_on_equal) {
     m_show_result_on_equal = show_result_on_equal;
 	//http://code.google.com/p/dwarftherapist/wiki/LatestVersion
 	Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
@@ -368,7 +372,7 @@ void MainWindow::version_check_finished(bool error) {
 		m_about_dialog->version_check_failed();
 	}
 }
-
+*/
 /*void MainWindow::scan_memory() {
 	m_scanner->show();
 }*/

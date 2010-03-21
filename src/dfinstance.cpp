@@ -56,48 +56,65 @@ DFInstance::DFInstance(QObject* parent)
 	}*/
 
     m_codec = new CP437Codec;
+    try{
+    m_DF.Attach();
+    }
+    catch(...){
+        m_is_ok = false;
+        return;
+    }
+    m_is_ok = true;
+    // test if connected with shm
+    DFHack::SHMProcess* test = dynamic_cast<DFHack::SHMProcess*>(m_DF.getProcess());
+    if(test != NULL){
+	    m_has_shm = true;
+    }
+    else{
+	    QMessageBox::warning(0, tr("Warning"), tr("SHM not installed properly\ncustom name and profession writing disabled\nTo enable please see INSTALL.txt"));
+	    m_has_shm = false;
+    }
+    m_mem = m_DF.getMemoryInfo();
+    DFHack::t_settlement current;
+    try{
+        m_DF.InitViewAndCursor(); 
+        m_DF.InitViewSize(); 
+        m_DF.InitMap();  // for getSize();
+        
+        m_DF.InitReadCreatures(m_num_creatures); 
+        m_DF.InitReadSettlements(m_num_settlements); 
+        m_DF.ReadCreatureMatgloss(m_creaturestypes); 
+        m_DF.ReadWoodMatgloss(m_woodstypes); 
+        m_DF.ReadPlantMatgloss(m_plantstypes); 
+        m_DF.ReadStoneMatgloss(m_stonestypes); 
+        m_DF.ReadMetalMatgloss(m_metalstypes); 
+        m_DF.ReadItemTypes(m_itemstypes); 
+        m_DF.InitReadNameTables(m_names);
+        heartbeat(); // check if a fort is loaded
+        m_DF.Suspend();
+	    m_DF.ReadCurrentSettlement(current);
+        m_DF.Resume();
+        }
+    catch(...){
+        m_is_ok = false;
+        m_DF.Resume();
+        m_DF.Detach();
+        return;
+    }
 
-	// test if connected with shm
-	DFHack::SHMProcess* test = dynamic_cast<DFHack::SHMProcess*>(m_DF.getProcess());
-	if(test != NULL){
-		m_has_shm = true;
-	}
-	else{
-		QMessageBox::warning(0, tr("Warning"), tr("SDL.dll not installed properly\ncustom name and profession writing disabled\nTo enable please rename the original SDL.dll to SDLreal.dll and copy the DFhack SDL.dll into your Dwarf Fortress directory"));
-		m_has_shm = false;
-	}
-	m_mem = m_DF.getMemoryInfo();
-	m_DF.InitViewAndCursor();
-	m_DF.InitViewSize();
-	m_DF.InitMap(); // for getSize();
+
+	    m_generic_fort_name = QString(m_DF.TranslateName(current.name,2,m_names).c_str());
+	    m_generic_fort_name = m_generic_fort_name.toLower();
+	    m_generic_fort_name[0] = m_generic_fort_name[0].toTitleCase();
+	    m_dwarf_fort_name = QString(m_DF.TranslateName(current.name,2,m_names,"DWARF").c_str());
+	    m_dwarf_fort_name = m_dwarf_fort_name.toLower();
+	    m_dwarf_fort_name[0] = m_dwarf_fort_name[0].toTitleCase();
+        connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
     
-	m_DF.InitReadCreatures(m_num_creatures);
-	m_DF.InitReadSettlements(m_num_settlements);
-	m_DF.ReadCreatureMatgloss(m_creaturestypes);
-	m_DF.ReadWoodMatgloss(m_woodstypes);
-	m_DF.ReadPlantMatgloss(m_plantstypes);
-	m_DF.ReadStoneMatgloss(m_stonestypes);
-	m_DF.ReadMetalMatgloss(m_metalstypes);
-	m_DF.ReadItemTypes(m_itemstypes);
-	m_DF.InitReadNameTables(m_english,m_foreign);
-
-	heartbeat(); // check if a fort is loaded
-	if(m_is_ok){
-		DFHack::t_settlement current;
-		m_DF.ReadCurrentSettlement(current);
-		m_generic_fort_name = QString(m_DF.TranslateName(current.name, m_english, m_foreign, true).c_str());
-		m_dwarf_fort_name = convertString(QString(m_DF.TranslateName(current.name, m_english, m_foreign, false).c_str()));
-	}
- 
-	connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
-	// let subclasses start the timer, since we don't want to be checking before we're connected
 }
-QString DFInstance::convertString(const char * str)
-{
+QString DFInstance::convert_string(const char * str){
     return m_codec->toUnicode(str,strlen(str));
 }
-QString DFInstance::convertString(const QString & str)
-{
+QString DFInstance::convert_string(const QString & str){
     return m_codec->toUnicode(str.toAscii().data(),str.size());
 }
 bool DFInstance::find_running_copy() {
@@ -127,6 +144,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     } else {
         // we lost the fort!
         m_is_ok = false;
+        m_DF.Detach();
     }
 	LOGI << "found" << dwarves.size() << "dwarves out of" << m_num_creatures << "creatures";
 	return dwarves;
@@ -138,20 +156,20 @@ void DFInstance::heartbeat() {
     m_DF.FinishReadCreatures(); // free old vector
     m_creatures_inited = m_DF.InitReadCreatures(m_num_creatures); // get new vector
     m_DF.Resume();
-	if (m_num_creatures < 1) {
-		// no game loaded, or process is gone
-		emit connection_interrupted();
-		m_is_ok = false;
-	}
+    if (m_num_creatures < 1) {
+	    // no game loaded, or process is gone
+	    emit connection_interrupted();
+	    m_is_ok = false;
+    }
 }
 
-QString DFInstance::translateName(const t_name &name , bool in_english)
+QString DFInstance::translate_name(const t_name &name , bool in_english)
 {
     QString qname(m_DF.TranslateName(name, m_english, m_foreign,in_english).c_str());
     return(qname);
 }
 
-QString DFInstance::getCreatureType(uint type)
+QString DFInstance::get_creature_type(uint type)
  {
    if(m_creaturestypes.size() > type)
      {
@@ -159,40 +177,35 @@ QString DFInstance::getCreatureType(uint type)
      }
      return QString("");
 }
-QString DFInstance::getBuildingType(uint type)
-{
+QString DFInstance::get_building_type(uint type){
   if(m_buildingtypes.size() > type)
     {
         return QString(m_buildingtypes[type].c_str());
     }
     return QString("");
 }
-QString DFInstance::getMetalType(uint type)
-{
+QString DFInstance::get_medal_type(uint type){
   if(m_metalstypes.size() > type)
     {
         return QString(m_metalstypes[type].name);
     }
     return QString("");
 }
-QString DFInstance::getStoneType(uint type)
-{
+QString DFInstance::get_stone_type(uint type){
   if(m_stonestypes.size() > type)
     {
         return QString(m_stonestypes[type].name);
     }
     return QString("");
 }
-QString DFInstance::getWoodType(uint type)
-{
+QString DFInstance::get_wood_type(uint type){
   if(m_woodstypes.size() > type)
     {
         return QString(m_woodstypes[type].name);
     }
     return QString("");
 }
-QString DFInstance::getPlantType(uint type)
-{
+QString DFInstance::get_plant_type(uint type){
   if(m_plantstypes.size() > type)
     {
         return QString(m_plantstypes[type].name);
@@ -200,32 +213,28 @@ QString DFInstance::getPlantType(uint type)
     return QString("");
 }
 
-QString DFInstance::getPlantDrinkType(uint type)
-{
+QString DFInstance::get_plant_drink_type(uint type){
   if(m_plantstypes.size() > type)
     {
         return QString(m_plantstypes[type].drink_name);
     }
     return QString("");
 }
-QString DFInstance::getPlantFoodType(uint type)
-{
+QString DFInstance::get_plant_food_type(uint type){
   if(m_plantstypes.size() > type)
     {
         return QString(m_plantstypes[type].food_name);
     }
     return QString("");
 }
-QString DFInstance::getPlantExtractType(uint type)
-{
+QString DFInstance::get_plant_extract_type(uint type){
   if(m_plantstypes.size() > type)
     {
         return QString(m_plantstypes[type].extract_name);
     }
     return QString("");
 }
-QString DFInstance::getItemType(uint type,uint index)
-{
+QString DFInstance::get_item_type(uint type,uint index){
   if(m_itemstypes.size() > type)
     {
         if(m_itemstypes[type].size() > index)
@@ -237,12 +246,15 @@ QString DFInstance::getItemType(uint type,uint index)
 }
 DFInstance::~DFInstance(){
     if(m_is_ok){
-		m_DF.FinishReadItems();
+        try{
+//		m_DF.FinishReadItems();
 		if(m_creatures_inited){
 			m_DF.FinishReadCreatures();
 		}
         m_DF.FinishReadNameTables();
         m_DF.FinishReadSettlements();
         m_DF.Detach();
+        }
+        catch(...){}
     }
 }

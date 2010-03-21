@@ -53,6 +53,7 @@
   </qresource>
   <qresource prefix="/status" >
     <file>img/cheese.png</file>
+    <file>img/Skull-Icon.png</file>
     <file>img/gear.png</file>
     <file>img/hammer.png</file>
     <file>img/hatchet.png</file>
