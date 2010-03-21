@@ -92,17 +92,17 @@ void Dwarf::refresh_data() {
         m_is_male = (int)sex == 1;
         TRACE << "\tMALE?" << m_is_male;
 
-	m_first_name = m_df->convertString(m_cre.name.first_name); 
-	if (m_first_name.size() > 1)
-		m_first_name[0] = m_first_name[0].toUpper();
-	TRACE << "\tFIRSTNAME:" << m_first_name;
-	m_nick_name = m_df->convertString(m_cre.name.nickname);
-	TRACE << "\tNICKNAME:" << m_nick_name;
-	m_pending_nick_name = m_nick_name;
-	m_last_name = m_df->convertString(m_df->translate_name(m_cre.name,false));
-	TRACE << "\tLASTNAME:" << m_last_name;
-	m_translated_last_name = m_df->convertString(m_df->translate_name(m_cre.name,true));
-    calc_names();
+		m_first_name = m_df->convert_string(m_cre.name.first_name); 
+		if (m_first_name.size() > 1)
+			m_first_name[0] = m_first_name[0].toUpper();
+		TRACE << "\tFIRSTNAME:" << m_first_name;
+		m_nick_name = m_df->convert_string(m_cre.name.nickname);
+		TRACE << "\tNICKNAME:" << m_nick_name;
+		m_pending_nick_name = m_nick_name;
+		m_last_name = m_df->convert_string(m_df->translate_name(m_cre.name,false));
+		TRACE << "\tLASTNAME:" << m_last_name;
+		m_translated_last_name = m_df->convert_string(m_df->translate_name(m_cre.name,true));
+		calc_names();
 
 	    m_custom_profession = m_df->convert_string(m_cre.custom_profession); 
 	    TRACE << "\tCUSTOM PROF:" << m_custom_profession;
@@ -138,15 +138,15 @@ void Dwarf::refresh_data() {
         m_squad_leader_id = m_cre.squad_leader_id; 
         TRACE << "\tSQUAD LEADER ID:" << m_squad_leader_id;
 
-    m_squad_name = m_df->convertString(m_df->translate_name(m_cre.squad_name,false));
-    TRACE << "\tSQUAD NAME:" << m_squad_name;
-    m_generic_squad_name = m_df->convertString(m_df->translate_name(m_cre.squad_name,true));
-    TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
+		m_squad_name = m_df->convert_string(m_df->translate_name(m_cre.squad_name,false));
+		TRACE << "\tSQUAD NAME:" << m_squad_name;
+		m_generic_squad_name = m_df->convert_string(m_df->translate_name(m_cre.squad_name,true));
+		TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
 
-	if(m_cre.flags1.bits.had_mood && (m_cre.mood == 0xFFFF || m_cre.mood == 8 ) ) //No idea what 8 is. But it's what DF checks!
-		m_artifact_name = m_df->translateName(m_cre.artifact_name,false);
-	else
-		m_artifact_name = "";
+		if(m_cre.flags1.bits.had_mood && (m_cre.mood == 0xFFFF || m_cre.mood == 8 ) ) //No idea what 8 is. But it's what DF checks!
+			m_artifact_name = m_df->translate_name(m_cre.artifact_name,false);
+		else
+			m_artifact_name = "";
 
 	    TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
 	    m_df->get_api()->Resume();

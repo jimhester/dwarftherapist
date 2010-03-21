@@ -184,12 +184,14 @@ namespace DFHack
         class DFHACK_EXPORT MemoryXmlUnderspecifiedEntry : public std::exception
         {
         public:
-            MemoryXmlUnderspecifiedEntry() {}
+            MemoryXmlUnderspecifiedEntry(const char * _where) : where(_where) {}
             virtual ~MemoryXmlUnderspecifiedEntry() throw(){};
-
+            std::string where;
             virtual const char* what() const throw()
             {
-                return "underspecified MemInfo entry, each entry needs to set both the name attribute and have a value";
+                std::stringstream s;
+                s << "underspecified MemInfo entry, each entry needs to set both the name attribute and have a value. parent: " << where;
+                return s.str().c_str();
             }
         };
 
@@ -206,6 +208,17 @@ namespace DFHack
                 std::stringstream s;
                 s << "unknown MemInfo type: " << type;
                 return s.str().c_str();
+            }
+        };
+        
+        class DFHACK_EXPORT SHMServerDisappeared : public std::exception
+        {
+        public:
+            SHMServerDisappeared(){}
+            virtual ~SHMServerDisappeared() throw(){};
+            virtual const char* what() const throw()
+            {
+                return "The server process has disappeared";
             }
         };
     }

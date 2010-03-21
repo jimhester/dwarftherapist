@@ -41,6 +41,9 @@ DFInstance::DFInstance(QObject* parent)
     ,m_DF ("etc/Memory.xml")
 	,m_heartbeat_timer(new QTimer(this))
 {
+
+	m_codec = new CP437Codec;
+
 	try {
 		m_is_ok = m_DF.Attach();
 	} 
@@ -55,14 +58,7 @@ DFInstance::DFInstance(QObject* parent)
 		return;
 	}*/
 
-    m_codec = new CP437Codec;
-    try{
-    m_DF.Attach();
-    }
-    catch(...){
-        m_is_ok = false;
-        return;
-    }
+   
     m_is_ok = true;
     // test if connected with shm
     DFHack::SHMProcess* test = dynamic_cast<DFHack::SHMProcess*>(m_DF.getProcess());
@@ -88,7 +84,7 @@ DFInstance::DFInstance(QObject* parent)
         m_DF.ReadStoneMatgloss(m_stonestypes); 
         m_DF.ReadMetalMatgloss(m_metalstypes); 
         m_DF.ReadItemTypes(m_itemstypes); 
-        m_DF.InitReadNameTables(m_names);
+        m_DF.InitReadNameTables(m_english,m_foreign);
         heartbeat(); // check if a fort is loaded
         m_DF.Suspend();
 	    m_DF.ReadCurrentSettlement(current);
@@ -98,18 +94,14 @@ DFInstance::DFInstance(QObject* parent)
         m_is_ok = false;
         m_DF.Resume();
         m_DF.Detach();
+		QMessageBox::warning(0,tr("Error"),tr("Unable to initialize correctly. Missing address in memory.xml"));
         return;
     }
 
+	m_generic_fort_name = convert_string(QString(m_DF.TranslateName(current.name, m_english, m_foreign, true).c_str()));
+	m_dwarf_fort_name = convert_string(QString(m_DF.TranslateName(current.name, m_english, m_foreign, false).c_str()));
 
-	    m_generic_fort_name = QString(m_DF.TranslateName(current.name,2,m_names).c_str());
-	    m_generic_fort_name = m_generic_fort_name.toLower();
-	    m_generic_fort_name[0] = m_generic_fort_name[0].toTitleCase();
-	    m_dwarf_fort_name = QString(m_DF.TranslateName(current.name,2,m_names,"DWARF").c_str());
-	    m_dwarf_fort_name = m_dwarf_fort_name.toLower();
-	    m_dwarf_fort_name[0] = m_dwarf_fort_name[0].toTitleCase();
-        connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
-    
+    connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 }
 QString DFInstance::convert_string(const char * str){
     return m_codec->toUnicode(str,strlen(str));
