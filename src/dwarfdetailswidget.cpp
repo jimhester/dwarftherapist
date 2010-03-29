@@ -36,6 +36,12 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     m_refreshTimer = new QTimer(this);
     connect(m_refreshTimer, SIGNAL(timeout()),this,SLOT(move_dwarf()));
 	ui->setupUi(this);
+
+    ui->tw_traits->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+    ui->tw_traits->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+
+    ui->tw_skills->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+    ui->tw_skills->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
 }
 void DwarfDetailsWidget::set_refresh(){
     if(m_refreshTimer->timerId() == -1){
@@ -100,70 +106,55 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         .arg(color.blue(), 2, 16, QChar('0'));
     ui->lbl_happiness->setStyleSheet(QString("background-color: %1;").arg(style_sheet_color));
 
-    foreach(QObject *obj, m_cleanup_list) {
-        obj->deleteLater();
-    }
-    m_cleanup_list.clear();
 
     // SKILLS TABLE
     QVector<Skill> *skills = d->get_skills();
-    QTableWidget *tw = new QTableWidget(skills->size(), 3, this);
-    ui->vbox_main->addWidget(tw, 10);
-    m_cleanup_list << tw;
-    tw->setEditTriggers(QTableWidget::NoEditTriggers);
-    tw->setGridStyle(Qt::NoPen);
-    tw->setAlternatingRowColors(true);
-    tw->setHorizontalHeaderLabels(QStringList() << "Skill" << "Level" << "Progress");
-    tw->verticalHeader()->hide();
-    tw->horizontalHeader()->setStretchLastSection(true);
-    tw->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-    tw->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
-    tw->setSortingEnabled(false); // no sorting while we're inserting
-    for (int row = 0; row < skills->size(); ++row) {
-        tw->setRowHeight(row, 18);
-        Skill s = skills->at(row);
-        QTableWidgetItem *text = new QTableWidgetItem(s.name());
+	ui->tw_skills->setSortingEnabled(false); // no sorting while we're inserting
+	ui->tw_skills->setUpdatesEnabled(false);
+	int cur_rows = ui->tw_skills->rowCount();
+	ui->tw_skills->setRowCount(skills->size());
+	for (int row = cur_rows; row < ui->tw_skills->rowCount(); ++row) {
+		ui->tw_skills->setRowHeight(row, 18);
+        QTableWidgetItem *text = new QTableWidgetItem;
         QTableWidgetItem *level = new QTableWidgetItem;
-        level->setData(0, d->get_rating_by_skill(s.id()));
 
+        QProgressBar *pb = new QProgressBar(ui->tw_skills);
+        pb->setDisabled(true);// this is to keep them from animating and looking all goofy
+		pb->setGeometry(ui->tw_skills->visualItemRect(ui->tw_skills->item(row,2)));
 
-        QProgressBar *pb = new QProgressBar(tw);
+        ui->tw_skills->setItem(row, 0, text);
+        ui->tw_skills->setItem(row, 1, level);
+        ui->tw_skills->setCellWidget(row, 2, pb);
+	}
+
+    for (int row = 0; row < skills->size(); ++row) {
+        Skill s = skills->at(row);
+		ui->tw_skills->item(row,0)->setText(s.name());
+		ui->tw_skills->item(row,1)->setData(0, d->get_rating_by_skill(s.id()));
+
+		QProgressBar *pb = static_cast<QProgressBar *>(ui->tw_skills->cellWidget(row,2));
         pb->setRange(s.exp_for_current_level(), s.exp_for_next_level());
         pb->setValue(s.actual_exp());
         pb->setToolTip(s.exp_summary());
-        pb->setDisabled(true);// this is to keep them from animating and looking all goofy
 
-        tw->setItem(row, 0, text);
-        tw->setItem(row, 1, level);
-        tw->setCellWidget(row, 2, pb);
     }
-    tw->setSortingEnabled(true); // no sorting while we're inserting
-    tw->sortItems(1, Qt::DescendingOrder); // order by level descending
+	ui->tw_skills->setUpdatesEnabled(true);
+    ui->tw_skills->setSortingEnabled(true); // no sorting while we're inserting
+    ui->tw_skills->sortItems(1, Qt::DescendingOrder); // order by level descending
 
 
     // TRAITS TABLE
     QHash<int, short> traits = d->traits();
-    QTableWidget *tw_traits = new QTableWidget(this);
-    ui->vbox_main->addWidget(tw_traits, 10);
-    m_cleanup_list << tw_traits;
-    tw_traits->setColumnCount(3);
-    tw_traits->setEditTriggers(QTableWidget::NoEditTriggers);
-	tw_traits->setWordWrap(true);
-    tw_traits->setShowGrid(false);
-    tw_traits->setGridStyle(Qt::NoPen);
-    tw_traits->setAlternatingRowColors(true);
-    tw_traits->setHorizontalHeaderLabels(QStringList() << "Trait" << "Raw" << "Message");
-    tw_traits->verticalHeader()->hide();
-    tw_traits->horizontalHeader()->setStretchLastSection(true);
-    tw_traits->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-    tw_traits->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
-    tw_traits->setSortingEnabled(false);
+
+	ui->tw_traits->clearContents();
+	ui->tw_traits->setRowCount(0);
+	ui->tw_traits->setSortingEnabled(false);
     for (int row = 0; row < traits.size(); ++row) {
         short val = traits[row];
         if (val == -1)
             continue;
-        tw_traits->insertRow(0);
-        tw_traits->setRowHeight(0, 14);
+		ui->tw_traits->insertRow(0);
+		ui->tw_traits->setRowHeight(0,16);
         Trait *t = gdr->get_trait(row);
         QTableWidgetItem *trait_name = new QTableWidgetItem(t->name);
         QTableWidgetItem *trait_score = new QTableWidgetItem;
@@ -181,43 +172,35 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 		QString lvl_msg = t->level_message(val);
         QTableWidgetItem *trait_msg = new QTableWidgetItem(lvl_msg);
 		trait_msg->setToolTip(lvl_msg);
-        tw_traits->setItem(0, 0, trait_name);
-        tw_traits->setItem(0, 1, trait_score);
-        tw_traits->setItem(0, 2, trait_msg);
+        ui->tw_traits->setItem(0, 0, trait_name);
+        ui->tw_traits->setItem(0, 1, trait_score);
+        ui->tw_traits->setItem(0, 2, trait_msg);
     }
-    tw_traits->setSortingEnabled(true);
-    tw_traits->sortItems(1, Qt::DescendingOrder);
+    ui->tw_traits->setSortingEnabled(true);
+    ui->tw_traits->sortItems(1, Qt::DescendingOrder);
 
     //Likes Table
     const QVector<QString> *likes = d->likes();
-    int maxSize = 0;
-    for(int i = 0;i<3;i++){
-        if(likes[i].size() > maxSize)
-            maxSize = likes[i].size();
-    }
-    QTableWidget *tw_likes = new QTableWidget(maxSize,3,this);
-    ui->vbox_main->addWidget(tw_likes, 10);
-    m_cleanup_list << tw_likes;
-    for(int i = 0;i<tw_likes->rowCount();i++){
-        tw_likes->setRowHeight(i,14);
-    }
-    tw_likes->setEditTriggers(QTableWidget::NoEditTriggers);
-	tw_likes->setWordWrap(true);
-    tw_likes->setShowGrid(false);
-    tw_likes->setGridStyle(Qt::NoPen);
-    tw_likes->setAlternatingRowColors(true);
-    tw_likes->setHorizontalHeaderLabels(QStringList() << "Material Likes" << "Item Likes" << "Food Likes");
-    tw_likes->verticalHeader()->hide();
-    tw_likes->horizontalHeader()->setStretchLastSection(true);
-    tw_likes->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-    tw_likes->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
-    tw_likes->setSortingEnabled(false);
-    for(int j = 0;j<3;j++){
+ 
+	ui->tw_likes_mat->setRowCount(likes[0].size());
+	ui->tw_likes_item->setRowCount(likes[1].size());
+	ui->tw_likes_food->setRowCount(likes[2].size());
+
+	for(int j = 0;j<3;j++){
         for(int i = 0;i<likes[j].size();i++){
             QString currentLike = likes[j][i];
             currentLike[0] = currentLike[0].toTitleCase();
             QTableWidgetItem *like = new QTableWidgetItem(currentLike);
-            tw_likes->setItem(i,j,like);
+			switch(j) {
+				case 0:
+					ui->tw_likes_mat->setItem(i,0,like);
+					break;
+				case 1:
+					ui->tw_likes_item->setItem(i,0,like);
+					break;
+				case 2:
+					ui->tw_likes_food->setItem(i,0,like);
+			}
         }
     }
 }

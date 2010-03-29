@@ -68,6 +68,7 @@ StateTableView::StateTableView(QWidget *parent)
 	connect(this, SIGNAL(expanded(const QModelIndex &)), SLOT(index_expanded(const QModelIndex &)));
 	connect(this, SIGNAL(collapsed(const QModelIndex &)), SLOT(index_collapsed(const QModelIndex &)));
     connect(this, SIGNAL(clicked(const QModelIndex &)), SLOT(clicked(const QModelIndex &)));
+
 	connect(m_header, SIGNAL(sectionPressed(int)), this, SLOT(header_pressed(int)));
 	connect(m_header, SIGNAL(sectionClicked(int)), this, SLOT(header_clicked(int)));
 }

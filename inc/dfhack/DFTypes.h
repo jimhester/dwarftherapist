@@ -31,6 +31,28 @@ distribution.
 namespace DFHack
 {
 
+template <int SIZE>
+struct junk_fill
+{
+    uint8_t data[SIZE];
+    /*
+    void Dump()
+    {
+        cout<<hex;
+        for (int i=0;i<SIZE;i++)
+            cout<<setw(2)<<i<<" ";
+        cout<<endl;
+        for (int i=0;i<SIZE;i++)
+        {
+            cout<<setw(2)<<(int)data[i]<<" ";
+            if ((i%32)==32-1)
+                cout<<endl;
+        }
+        cout<<endl;
+    }
+    */
+};
+    
 struct t_matgloss
 {
     char id[128]; //the id in the raws
@@ -73,6 +95,37 @@ struct t_matglossPair
 {
     int16_t type;
     int16_t index;
+};
+
+// DF effects, by darius from the bay12 forum
+enum EFFECT_TYPE
+{
+    EFF_MIASMA=0,
+    EFF_WATER,
+    EFF_WATER2,
+    EFF_BLOOD,
+    EFF_DUST,
+    EFF_MAGMA,
+    EFF_SMOKE,
+    EFF_DRAGONFIRE,
+    EFF_FIRE,
+    EFF_WEBING,
+    EFF_BOILING, // uses matgloss
+    EFF_OCEANWAVE
+};
+struct t_effect_df40d //size 40
+{
+    uint16_t type;
+    t_matglossPair material;
+    int16_t lifetime;
+    uint16_t x;
+    uint16_t y;
+    uint16_t z; //14
+    int16_t x_direction;
+    int16_t y_direction;
+    junk_fill <12> unk4;
+    uint8_t canCreateNew;//??
+    uint8_t isHidden;
 };
 
 // raw
@@ -554,6 +607,10 @@ struct t_creature
     uint32_t money;
     int32_t squad_leader_id;
     uint8_t sex;
+	uint32_t pregnancy_timer; //Countdown timer to giving birth
+	int32_t blood_max;
+	int32_t blood_current;
+	uint32_t bleed_rate;
 };
 //raw
 struct t_item_df40d
@@ -671,6 +728,12 @@ enum e_designation
     designation_7 // whatever
 };
 
+enum e_liquidtype
+{
+    liquid_water,
+    liquid_magma
+};
+
 struct naked_designation
 {
     unsigned int flow_size : 3; // how much liquid is here?
@@ -700,7 +763,7 @@ struct naked_designation
      * 0 = water
      * 1 = magma
      */
-    unsigned int liquid_type : 1;
+    e_liquidtype liquid_type : 1;
     unsigned int water_table : 1; // srsly. wtf?
     unsigned int rained : 1; // does this mean actual rain (as in the blue blocks) or a wet tile?
     e_traffic traffic : 2; // needs enum
@@ -769,15 +832,38 @@ union t_occupancy
     naked_occupancy_grouped unibits;
 };
 
+// map block flags
+struct naked_blockflags
+{
+    unsigned int designated : 1;// designated for jobs (digging and stuff like that)
+    unsigned int unk_1 : 1; // possibly related to the designated flag
+    // two flags required for liquid flow. no idea why
+    unsigned int liquid_1 : 1;
+    unsigned int liquid_2 : 1;
+    unsigned int unk_2: 28; // rest of the flags is completely unknown
+    // there's a possibility that this flags field is shorter than 32 bits
+};
+
+union t_blockflags
+{
+    uint32_t whole;
+    naked_blockflags bits;
+};
+
+typedef int16_t tiletypes40d [16][16];
+typedef DFHack::t_designation designations40d [16][16];
+typedef DFHack::t_occupancy occupancies40d [16][16];
+typedef uint8_t biome_indices40d [8];
+
 typedef struct
 {
-    int16_t tiletypes [16][16];
-    DFHack::t_designation designaton [16][16];
-    DFHack::t_occupancy occupancy [16][16];
+    tiletypes40d tiletypes;
+    designations40d designation;
+    occupancies40d occupancy;
     // really a '7', but I use 8 to make it neater :)
-    uint8_t biome_indices [8];
+    biome_indices40d biome_indices;
     uint32_t origin; // the address where it came from
-    uint32_t dirty_dword; // bit 1 set means that the block is to be included in job checks
+    t_blockflags blockflags;
 } mapblock40d;
 
 struct t_viewscreen 
