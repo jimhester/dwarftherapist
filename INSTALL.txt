@@ -1,0 +1,41 @@
+ ** Installing on Windows
+ - Open your DF folder, locate SDL.dll and rename it to SDLreal.dll (making
+   a backup of it is a good idea)
+ - Copy the right DFHack SDL.dll into your DF folder.
+ - Restart DF if it is running
+
+ ** Unistalling on Windows
+ - Open your DF folder, locate SDL.dll and delete it
+ - Rename SDLreal.dll to SDL.dll
+ - Restart DF if it is running
+
+
+ ** Installing on Linux
+ - Open your DF folder and the libs folder within it
+ - copy DFHack libdfconnect.so to the libs folder
+ - copy the df startup script, name it dfhacked
+ - open the new dfhacked startup script and add this line:
+     export LD_PRELOAD="./libs/libdfconnect.so" # Hack DF!
+   just before the line that launches DF
+
+   Here's an example how the file can look after the change:
+#!/bin/sh
+DF_DIR=$(dirname "$0")
+cd "${DF_DIR}"
+export SDL_DISABLE_LOCK_KEYS=1 # Work around for bug in Debian/Ubuntu SDL patch.
+#export SDL_VIDEO_CENTERED=1 # Centre the screen.  Messes up resizing.
+ldd dwarfort.exe | grep SDL_image | grep -qv "not found$"
+if [ $? -eq 0 ]; then
+ mkdir unused_libs
+ mv libs/libSDL* unused_libs/
+fi
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"./libs" # Update library search path.
+export LD_PRELOAD="./libs/libdfconnect.so" # Hack DF!
+./dwarfort.exe $* # Go, go, go! :)
+
+ - Use this new startup script to start DF
+
+ ** Uninstalling on Linux
+ - Open your DF and DF/libs folders
+ - Delete libdfconnect.so and the dfhacked startup script
+ - Go back to using the df startup script
