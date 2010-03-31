@@ -1,3 +1,8 @@
+RELEASE DT-DFhack 0.1.1 (March 30, 2010)
+ * Updates to DFHack 0.2
+ * Some crash fixes due to incorrect offsets
+ * Some ui improvements from Zhentar
+
 RELEASE DFhack 0.1.1 (March 16, 2010)
  
  * Incorporates the new addresses for all released linux versions as well as windows versions all the way back to 39a
@@ -5,7 +10,7 @@ RELEASE DFhack 0.1.1 (March 16, 2010)
  * Zhentar - Added Artifact names to the detail screen if a dwarf created the artifact
  * Zhentar also did a bunch of work on figuring out the name structure in DF, so big kudos to him
 
-RELEASE DFhack 0.1.0 (March 03, 2010)
+RELEASE DT-DFhack 0.1.0 (March 03, 2010)
 CHANGES SINCE 0.0.5
 
   * major stability improvements, this should be at least on par with the original DT now
@@ -19,14 +24,14 @@ CHANGES SINCE 0.0.5
   * updated QT in precompiled windows version to 4.6.2
   * uses the latest stable dfhack before the shm rewrite
 
-RELEASE DFhack 0.0.5 (Janurary 12, 2009)
-CHANGES DFHack 0.0.1
+RELEASE DT-DFhack 0.0.5 (Janurary 12, 2009)
+CHANGES DT-DFHack 0.0.1
 ===============================================================================
 MAJOR CHANGES:
 
  * Made the name scripting much more robust, you can now do it from any menu and pause state and it will work correctly (but not return you to the previous place)
 
-RELEASE DFhack (December 24, 2009)
+RELEASE DT-DFhack (December 24, 2009)
 CHANGES SINCE 0.4.2
 ===============================================================================
 MAJOR CHANGES:

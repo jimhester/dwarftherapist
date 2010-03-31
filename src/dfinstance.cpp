@@ -49,11 +49,7 @@ DFInstance::DFInstance(QObject* parent)
 		QMessageBox::warning(0,tr("Error"),tr("Unable to locate a running copy of Dwarf Fortress"));
 		m_is_ok = false;
 		return;
-	} /*catch(DFHack::Error::CantAttach &e) {
-		QMessageBox::warning(0,tr("Error"),tr("Unable to attach to Dwarf Fortress"));
-		m_is_ok = false;
-		return;
-	}*/
+	} 
 
     m_codec = new CP437Codec;
     try{
@@ -89,21 +85,23 @@ DFInstance::DFInstance(QObject* parent)
         m_DF.ReadMetalMatgloss(m_metalstypes); 
         m_DF.ReadItemTypes(m_itemstypes); 
         m_DF.InitReadNameTables(m_english,m_foreign);
-        heartbeat(); // check if a fort is loaded
-        m_DF.Suspend();
-	    m_DF.ReadCurrentSettlement(current);
-        m_DF.Resume();
-        }
+    }
     catch(...){
         m_is_ok = false;
         m_DF.Resume();
         m_DF.Detach();
         return;
     }
+    heartbeat(); // check if a fort is loaded
+    if(m_is_ok){
+        m_DF.Suspend();
+	    m_DF.ReadCurrentSettlement(current);
+        m_DF.Resume();
 
-        m_generic_fort_name = QString(m_DF.TranslateName(current.name, m_english, m_foreign, true).c_str());
-		m_dwarf_fort_name = QString(m_DF.TranslateName(current.name, m_english, m_foreign, false).c_str());
+        m_generic_fort_name = convert_string(m_DF.TranslateName(current.name, m_english, m_foreign, true).c_str());
+		m_dwarf_fort_name = convert_string(m_DF.TranslateName(current.name, m_english, m_foreign, false).c_str());
         connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
+    }
 }
 QString DFInstance::convert_string(const char * str){
     return m_codec->toUnicode(str,strlen(str));
